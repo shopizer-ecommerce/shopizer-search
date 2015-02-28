@@ -1,3 +1,5 @@
+nexus instructions
+
 cd target
 
 mvn gpg:sign-and-deploy-file -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -DpomFile=sm-search-0.0.3.pom -Dfile=sm-search-0.0.3.jar
