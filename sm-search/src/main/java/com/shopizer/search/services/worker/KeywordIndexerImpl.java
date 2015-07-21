@@ -10,7 +10,9 @@ import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang.StringUtils;
+
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.shopizer.search.services.IndexKeywordRequest;
@@ -26,6 +28,7 @@ import com.shopizer.search.utils.CustomIndexConfiguration;
 import com.shopizer.search.utils.CustomIndexFieldConfiguration;
 import com.shopizer.search.utils.DateUtil;
 import com.shopizer.search.utils.DynamicIndexNameUtil;
+import com.shopizer.search.utils.FileUtil;
 import com.shopizer.search.utils.SearchClient;
 
 
@@ -58,7 +61,11 @@ public class KeywordIndexerImpl implements IndexWorker {
 
 	private synchronized void init() {
 		
+		if(init) {
+			return;
+		}
 		
+		init = true;
 		try {
 			
 			if(indexConfigurations!=null) {
@@ -77,6 +84,50 @@ public class KeywordIndexerImpl implements IndexWorker {
 						continue;
 					}
 					indexConfigurationsMap.put(key, ic);
+					
+					//settings mapping
+
+					String mappingFile = null;
+					String settingsFile = null;
+					if(!StringUtils.isBlank(ic.getMappingFileName())) {
+						mappingFile = ic.getMappingFileName();
+					}
+					if(!StringUtils.isBlank(ic.getSettingsFileName())) {
+						settingsFile = ic.getSettingsFileName();
+					}
+					
+					if(mappingFile!=null || settingsFile!=null) {
+						
+						String metadata = null;
+						String settingsdata = null;
+						try {
+							
+							if(mappingFile!=null) {
+								metadata = FileUtil.readFileAsString(mappingFile);
+							}
+							
+							if(settingsFile!=null) {
+								settingsdata = FileUtil.readFileAsString(settingsFile);
+							}
+
+							if(!StringUtils.isBlank(ic.getIndexName())) {
+								
+								if(!searchDelegate.indexExist(ic.getCollectionName())) {
+									searchDelegate.createIndice(metadata, settingsdata, ic.getCollectionName(), ic.getIndexName());
+								}
+							}
+							
+						} catch (Exception e) {
+							log.error(e);
+							log.error("*********************************************");
+							log.error(e);
+							log.error("*********************************************");
+							init=false;
+						}
+					}
+
+					
+					
 
 				}
 				
@@ -118,7 +169,7 @@ public class KeywordIndexerImpl implements IndexWorker {
 				CustomIndexConfiguration conf = indexConfigurationsMap.get(object);
 				
 				
-				String collectionName = DynamicIndexNameUtil.getIndexName(conf.getCollectionName(),indexData);
+/*				String collectionName = DynamicIndexNameUtil.getIndexName(conf.getCollectionName(),indexData);
 				StringTokenizer t = new StringTokenizer(conf.getCollectionName(),"_");
 				int countToken = t.countTokens();
 				if(countToken>1) {
@@ -135,7 +186,7 @@ public class KeywordIndexerImpl implements IndexWorker {
 						count++;
 					}
 					collectionName = iName.toString();
-				} 
+				} */
 				
 				//get fields to index
 				List fields = conf.getFields();
@@ -321,9 +372,11 @@ public class KeywordIndexerImpl implements IndexWorker {
 					
 					
 					//delete previous keywords for the same id
-					deleteKeywordsImpl.deleteObject(client, collectionName, id);
+					//deleteKeywordsImpl.deleteObject(client, collectionName, id);
+					deleteKeywordsImpl.deleteObject(client, conf.getCollectionName(), conf.getIndexName(), id);
 
-					searchDelegate.bulkIndexKeywords(bulks, collectionName, "keyword");
+					//searchDelegate.bulkIndexKeywords(bulks, collectionName, "keyword");
+					searchDelegate.bulkIndexKeywords(bulks, conf.getCollectionName(), conf.getIndexName());
 					
 				}
 				

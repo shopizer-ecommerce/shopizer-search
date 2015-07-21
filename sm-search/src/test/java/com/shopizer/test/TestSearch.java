@@ -15,7 +15,18 @@ import com.shopizer.search.services.SearchRequest;
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.SearchService;
 
-
+/**
+ * search api
+ * 
+ * Get all indexed data
+ * curl -XGET 'http://localhost:9200/product_en_default/_search?pretty=1' 
+ * 
+ * Search
+ * curl -XGET 'http://localhost:9200/product_en_default/_search' -d '{"query":{"query_string":{"fields" : ["name^5", "description", "tags"], "query" : "*spr*", "use_dis_max" : true }},"facets" : { "categories" : { "terms" : {"field" : "categories"}}}}'
+ * 
+ * @author carlsamson
+ *
+ */
 @ContextConfiguration(locations = {
 		"classpath:spring/spring-context-test.xml"
 })
@@ -31,34 +42,28 @@ public class TestSearch {
 	private SearchService searchService;
 	
 	@Test
-	@Ignore
+	//@Ignore
 	public void testSearch() throws Exception {
 		
-		//String json="{\"wildcard\":{\"keyword\":\"Spr*\"}}";
-		
-		//String json ="{\"query\":{\"match\" : {\"_all\" : \"sp\" }}}";
-		
-		/**
 
-	var query = '\"query\":{\"query_string\" : {\"fields\" : [\"name^3\", \"description\", \"tags\"], \"query\" : \"*' + q + '*", \"use_dis_max\" : true }}';
+		String facets = "\"facets\" : { \"categories\" : { \"terms\" : {\"field\" : \"categories\"}}}";
+		
+		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*spr*\", \"use_dis_max\" : true }}";
 
-		 */
+		String query = q + "," + facets + "}";
 		
-		
-		
-		String json ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*spr*\", \"use_dis_max\" : true }}}";
-
+		System.out.println(query);
 
 		//String json ="{\"query\":{\"filtered\":{\"query\":{\"text\":{\"_all\":\"beach\"}},\"filter\":{\"numeric_range\":{\"age\":{\"from\":\"22\",\"to\":\"45\",\"include_lower\":true,\"include_upper\":true}}}}},\"highlight\":{\"fields\":{\"description\":{}}},\"facets\":{\"tags\":{\"terms\":{\"field\":\"tags\"}}}}";
 
 		SearchRequest request = new SearchRequest();
-		request.setCollection("product_en_default");
-		request.setJson(json);
+		request.addCollection("product_en_default");
+		request.setJson(query);
 		request.setSize(20);
 		request.setStart(0);
 		
 		
-		System.out.println(json);
+		System.out.println(query);
 
 		SearchResponse resp= searchService.search(request);
 		

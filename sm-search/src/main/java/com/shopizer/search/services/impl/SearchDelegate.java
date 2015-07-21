@@ -9,12 +9,12 @@ import com.shopizer.search.services.SearchResponse;
 
 public interface SearchDelegate {
 
-	public abstract boolean indexExist(String indexName) throws Exception;
+	public boolean indexExist(String indexName) throws Exception;
 
 	/**
 	 * Creates a structure that represents the object and the content to be indexed
 	 */
-	public abstract void createIndice(String mappingJson, String settingsJson, String collection,
+	void createIndice(String mappingJson, String settingsJson, String collection,
 			String object) throws Exception;
 
 	/**
@@ -24,14 +24,14 @@ public interface SearchDelegate {
 	 * @param object
 	 * @param id
 	 */
-	public abstract void index(String json, String collection, String object,
-			String id);
+	void index(String json, String collection, String object,
+			String id) throws Exception;
 
-	public abstract void delete(String collection, String object, String id)
+	void delete(String collection, String object, String id)
 			throws Exception;
 
-	public abstract void bulkDeleteIndex(Collection<String> ids,
-			String collection) throws Exception;
+	void bulkDeleteIndex(Collection<String> ids,
+			String collection, String object) throws Exception;
 
 	/**
 	 * Index keywords in bulk
@@ -40,11 +40,11 @@ public interface SearchDelegate {
 	 * @param object
 	 * @param id
 	 */
-	public abstract void bulkIndexKeywords(
+	void bulkIndexKeywords(
 			Collection<IndexKeywordRequest> bulks, String collection,
-			String object);
+			String object) throws Exception;
 
-	public abstract com.shopizer.search.services.GetResponse getObject(
+	com.shopizer.search.services.GetResponse getObject(
 			String collection, String object, String id) throws Exception;
 
 	/**
@@ -54,10 +54,10 @@ public interface SearchDelegate {
 	 * @param field
 	 * @return
 	 */
-	public abstract SearchResponse search(SearchRequest request)
+    SearchResponse search(SearchRequest request)
 			throws Exception;
 
-	public abstract Set<String> searchAutocomplete(String collection,
-			String json, int size);
+	Set<String> searchAutocomplete(String collection,
+			String json, int size) throws Exception;
 
 }

@@ -5,7 +5,9 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang.StringUtils;
+
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -42,12 +44,14 @@ public class ObjectIndexerImpl implements IndexWorker {
 		if(init) {
 			return;
 		}
+
 		init = true;
 		if(getIndexConfigurations()!=null && getIndexConfigurations().size()>0) {
 
 				for(Object o : indexConfigurations) {
 					
 					IndexConfiguration config = (IndexConfiguration)o;
+					
 					String mappingFile = null;
 					String settingsFile = null;
 					if(!StringUtils.isBlank(config.getMappingFileName())) {
@@ -77,6 +81,7 @@ public class ObjectIndexerImpl implements IndexWorker {
 									searchDelegate.createIndice(metadata, settingsdata, config.getCollectionName(), config.getIndexName());
 								}
 							}
+							
 						} catch (Exception e) {
 							log.error(e);
 							log.error("*********************************************");
@@ -86,8 +91,6 @@ public class ObjectIndexerImpl implements IndexWorker {
 						}
 					}
 				} 
-
-			
 		} 
 	}
 

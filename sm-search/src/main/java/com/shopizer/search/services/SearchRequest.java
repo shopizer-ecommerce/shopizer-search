@@ -1,16 +1,20 @@
 package com.shopizer.search.services;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchRequest {
 	
-	private String collection;
+	private List<String> collections;
 	
-	public String getCollection() {
-		return collection;
+	public List<String> getCollections() {
+		return collections;
 	}
-	public void setCollection(String collection) {
-		this.collection = collection;
+	public void addCollection(String collection) {
+		if(this.collections == null) {
+			this.collections = new ArrayList<String>();
+		}
+		this.collections.add(collection);
 	}
 
 

@@ -3,37 +3,34 @@ package com.shopizer.search.services;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasticsearch.search.highlight.HighlightField;
-
 public class SearchHit {
 	
 	//private org.elasticsearch.search.SearchHit searchit;
 	private String id;
 	private String index;
-	private float score;
-	private Map<String,Object> metaEntries = new HashMap<String,Object>();
+	private String internalId;
+	//private float score;
+	private Map<String,Object> item = new HashMap<String,Object>();
+
 	
-	public Map<String,Object> getMetaEntries() {
-		return metaEntries;
+	public Map<String,Object> getItem() {
+		return item;
 	}
 
-	public SearchHit(org.elasticsearch.search.SearchHit searchit) {
+	public SearchHit(Map<String, Object> item, String internalId) {
 		
-		this.id = searchit.getId();
-		this.score = searchit.getScore();
-		this.index = searchit.getIndex();
-		metaEntries.put("source", searchit.getSource());
+		this.id = (String) item.get("id");
+		this.internalId = internalId;
+		this.item = item;
+		//metaEntries.put("source", item);
 		
-		if(searchit.getHighlightFields()!=null && searchit.getHighlightFields().size()>0) {
-			metaEntries.put("highlightFields", searchit.getHighlightFields());
-		}
+		//if(searchit.getHighlightFields()!=null && searchit.getHighlightFields().size()>0) {
+		//	metaEntries.put("highlightFields", searchit.getHighlightFields());
+		//}
 		
 	}
 	
-	@SuppressWarnings("unchecked")
-	public Map<String, Object> getSource() {
-		return (Map<String, Object>)metaEntries.get("source");
-	}
+
 	
 	public String getId() {
 		return id;
@@ -42,16 +39,11 @@ public class SearchHit {
 	public String getIndex() {
 		return index;
 	}
-	
-	public float getScore() {
-		return score;
+
+	public String getInternalId() {
+		return internalId;
 	}
-	
-	@SuppressWarnings("unchecked")
-	public Map<String, HighlightField> getHighlightFields() {
-		return (Map<String, HighlightField>)metaEntries.get("highlightFields");
-	}
-	
-	
+
+
 
 }

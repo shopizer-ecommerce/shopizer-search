@@ -24,15 +24,12 @@ public class DeleteObjectImpl implements DeleteObjectWorker {
 			}
 			
 			
-			if(r.getFields()!=null && r.getFields().size()>0) {
-			
-				//System.out.println(r.toString());
-	
-				
+			if(r.getFieldMap()!=null && r.getFieldMap().size()>0) {
+
 				//ObjectMapper mapper = new ObjectMapper();
 				//Map indexData = mapper.readValue(r.getResponseAsString(), Map.class);
 				
-				context.setObject("indexData", r.getFields());
+				context.setObject("indexData", r.getFieldMap());
 			
 			}
 			
@@ -77,7 +74,7 @@ public class DeleteObjectImpl implements DeleteObjectWorker {
 	}
 
 
-	public void deleteObject(SearchClient client, String collection, String id)
+	public void deleteObject(SearchClient client, String collection, String object, String id)
 			throws Exception {
 		throw new Exception("Not implemented");
 		

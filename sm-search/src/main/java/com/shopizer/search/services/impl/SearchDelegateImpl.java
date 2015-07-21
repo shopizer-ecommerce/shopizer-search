@@ -1,21 +1,34 @@
 package com.shopizer.search.services.impl;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import io.searchbox.action.Action;
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
+import io.searchbox.core.Bulk;
+import io.searchbox.core.Delete;
+import io.searchbox.core.Get;
+import io.searchbox.core.Index;
+import io.searchbox.core.Search;
+import io.searchbox.core.SearchResult;
+import io.searchbox.core.search.facet.TermsFacet;
+import io.searchbox.core.search.facet.TermsFacet.Term;
+import io.searchbox.indices.CreateIndex;
+import io.searchbox.indices.IndicesExists;
+import io.searchbox.indices.mapping.PutMapping;
+import io.searchbox.params.Parameters;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequestBuilder;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
+/*import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -23,6 +36,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.facet.Facet;
@@ -32,8 +46,19 @@ import org.elasticsearch.search.facet.geodistance.GeoDistanceFacet;
 import org.elasticsearch.search.facet.histogram.HistogramFacet;
 import org.elasticsearch.search.facet.range.RangeFacet;
 import org.elasticsearch.search.facet.terms.TermsFacet;
-import org.elasticsearch.search.facet.terms.TermsFacet.Entry;
+import org.elasticsearch.search.facet.terms.TermsFacet.Entry;*/
+import org.elasticsearch.common.lang3.StringUtils;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 
+
+
+
+
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.shopizer.search.services.IndexKeywordRequest;
 import com.shopizer.search.services.SearchRequest;
 import com.shopizer.search.services.SearchResponse;
@@ -47,6 +72,14 @@ import com.shopizer.search.services.field.LongField;
 import com.shopizer.search.services.field.StringField;
 import com.shopizer.search.utils.SearchClient;
 
+/**
+ * https://www.found.no/foundation/java-clients-for-elasticsearch/
+ * https://github.com/searchbox-io/Jest/blob/master/jest/README.md
+ * HTTP Proxy https://www.elastic.co/blog/playing-http-tricks-nginx
+ * Backup - restore http://tech.domain.com.au/2014/12/elasticsearch-snapshots-backup-restore-s3/
+ * @author carlsamson
+ *
+ */
 public class SearchDelegateImpl implements SearchDelegate {
 
 	private SearchClient searchClient = null;
@@ -60,6 +93,66 @@ public class SearchDelegateImpl implements SearchDelegate {
 
 	private static Logger log = Logger.getLogger(SearchDelegateImpl.class);
 	
+	@SuppressWarnings("unchecked")
+	private Object readNode(JsonElement jsonElement) throws Exception {
+		 
+		Object container = null;
+		if (jsonElement.isJsonObject()) {
+	            Set<java.util.Map.Entry<String, JsonElement>> ens = ((JsonObject) jsonElement).entrySet();
+	            if (ens != null) {
+	                // Iterate JSON Elements with Key values
+	                for (java.util.Map.Entry<String, JsonElement> en : ens) {
+	                    //System.out.println(en.getKey() + " : ");
+	                	if(container==null) {
+	                		container = new HashMap<String, Object>();
+	                	}
+	                	((Map)container).put(en.getKey(), readNode(en.getValue()));
+	                }
+	            }
+	        } 
+	        
+	        // Check whether jsonElement is Arrary or not
+	        else if (jsonElement.isJsonArray()) {
+	                    JsonArray jarr = jsonElement.getAsJsonArray();
+	                    // Iterate JSON Array to JSON Elements
+	                    container = new ArrayList<Object>();
+	                    for (JsonElement je : jarr) {
+	                        ((List)container).add(readNode(je));
+	                    }
+	        }
+	        
+	        // Check whether jsonElement is NULL or not
+	        else if (jsonElement.isJsonNull()) {
+	            // print null
+	        	
+	        } 
+	        // Check whether jsonElement is Primitive or not
+	        else if (jsonElement.isJsonPrimitive()) {
+	            // print value as String
+	        	container = jsonElement.getAsString();
+	        } 
+	        
+	
+		return container;
+	}
+	
+	private Map<String, Object> getResults(JsonObject jsonObject, String path) throws Exception {
+		
+		Map<String, Object> fields = new HashMap<String, Object>();
+		JsonElement jsonElement = jsonObject.get(path);
+		Set<java.util.Map.Entry<String, JsonElement>> ens = ((JsonObject) jsonElement).entrySet();
+        if (ens != null) {
+            // Iterate JSON Elements with Key values
+            for (java.util.Map.Entry<String, JsonElement> en : ens) {
+                fields.put(en.getKey(),readNode(en.getValue()));
+            }
+        }
+        
+        return fields;
+		
+		
+	}
+	
 
 	
 	/* (non-Javadoc)
@@ -67,38 +160,66 @@ public class SearchDelegateImpl implements SearchDelegate {
 	 */
 	@Override
 	public boolean indexExist(String indexName) throws Exception {
-		Client client = searchClient.getClient();
+		JestClient client = searchClient.getClient();
 		
-		IndicesExistsRequestBuilder indiceRequestBuilder = client.admin().indices().prepareExists(indexName);
-		IndicesExistsResponse indiceResponse = indiceRequestBuilder.execute().actionGet(); 
-		return indiceResponse.isExists();
+
+		@SuppressWarnings("rawtypes")
+		IndicesExists.Builder builder = new IndicesExists.Builder(indexName);
 		
+		
+		if(!StringUtils.isBlank(searchClient.getAuthenticationHeader())) {
+			builder.setHeader("Authorization", searchClient.getAuthenticationHeader());
+		}
+		
+		Action action = builder.build();
+		
+		@SuppressWarnings("unchecked")
+		JestResult result = client.execute(action);
+
+		return result.isSucceeded();
+
 	}
 	
+	
+	//https://github.com/searchbox-io/Jest/blob/master/jest/src/test/java/io/searchbox/indices/CreateIndexIntegrationTest.java
 	/* (non-Javadoc)
 	 * @see com.shopizer.search.services.impl.SearchService#createIndice(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void createIndice(String mapping,String settings,String collection,String object) throws Exception {
+	public void createIndice(String mapping, String settings,String index,String object) throws Exception {
 		
 	
 		
-		Client client = searchClient.getClient();
-
-		//maintain a list of created index
+		//Client client = searchClient.getClient();
+		JestClient client = searchClient.getClient();
 		
-		CreateIndexRequest indexRequest = new CreateIndexRequest(collection);
-		if(mapping!=null) {
-			indexRequest.mapping(object, mapping);
-		}
+		
+		CreateIndex.Builder createIndex = new CreateIndex.Builder(index);
+				//.Builder(index);
 		if(settings!=null) {
-			indexRequest.settings(settings);
+			createIndex.settings(
+			ImmutableSettings.builder()
+			.loadFromSource(settings)
+			.build()
+			.getAsMap());
+		}
+		
+		client.execute(createIndex.build());
+		
+		PutMapping.Builder putMapping = new PutMapping.Builder(
+				index,
+				object,
+				mapping
+		);
+		
+		
+		JestResult result = client.execute(putMapping.build());
+		
+		if(result!=null && !StringUtils.isBlank(result.getErrorMessage())) {
+			log.error("An error occured while creating an index " + result.getErrorMessage());
 		}
 
-		client.admin().indices().  
-	    create(indexRequest).
-	    actionGet();
-
+		
 	}
 	
 	
@@ -106,17 +227,17 @@ public class SearchDelegateImpl implements SearchDelegate {
 	 * @see com.shopizer.search.services.impl.SearchService#index(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void index(String json, String collection, String object, String id) {
+	public void index(String json, String collection, String object, String id) throws Exception {
 		
+		JestClient client = searchClient.getClient();
 
-		
-		Client client = searchClient.getClient();
-
-        @SuppressWarnings("unused")
-		IndexResponse r = client.prepareIndex(collection, object, id) 
-        .setSource(json) 
-        .execute() 
-        .actionGet();
+        
+        Index index = new Index.Builder(json).index(collection).type(object).id(id).build();
+        JestResult result = client.execute(index);
+        
+		if(result!=null && !StringUtils.isBlank(result.getErrorMessage())) {
+			log.error("An error occured while indexing a document " + json + " " + result.getErrorMessage());
+		}
 		
 	}
 	
@@ -127,52 +248,70 @@ public class SearchDelegateImpl implements SearchDelegate {
 	public void delete(String collection, String object, String id) throws Exception {
 		
 		if(this.indexExist(collection)) {
-		
-			Client client = searchClient.getClient();
-	
-			@SuppressWarnings("unused")
-			DeleteResponse r = client.prepareDelete(collection, object, id) 
-	        .execute() 
-	        .actionGet();
-		
-		}
-		
+			
+			JestClient client = searchClient.getClient();
 
+			Delete builder = new Delete.Builder(id)
+            .index(collection)
+            .type(object)
+            .build();
+			
+			JestResult result = client.execute(builder);
+			
+			if(result!=null && !result.isSucceeded() && !StringUtils.isBlank(result.getErrorMessage())) {
+				log.error("Cannot delete from " + collection + " with id " + id);
+			}
+
+		}
 	}
 	
 	/* (non-Javadoc)
 	 * @see com.shopizer.search.services.impl.SearchService#bulkDeleteIndex(java.util.Collection, java.lang.String)
 	 */
 	@Override
-	public void bulkDeleteIndex(Collection<String> ids, String collection) throws Exception {
+	public void bulkDeleteIndex(Collection<String> ids, String collection, String object) throws Exception {
 		
 
 		if(this.indexExist(collection)) {
-		
-			Client client = searchClient.getClient();
 			
+			JestClient client = searchClient.getClient();
+
 			if(ids!=null && ids.size()>0) {
 				
-				BulkRequestBuilder bulkRequest = client.prepareBulk();
+				//BulkRequestBuilder bulkRequest = client.prepareBulk();
+				
+				
+			    //.defaultType(object);
+			    //.addAction(new Index.Builder(article1).build())
+			    //.addAction(new Index.Builder(article2).build())
+			    //.addAction(new Delete.Builder("1").index("twitter").type("tweet").build())
+			    //.build();
+				
+				Bulk.Builder bulk = new Bulk.Builder()
+			    .defaultIndex(collection);
 				
 				for(String s : ids) {
 					
 					
-					DeleteRequest dr = new DeleteRequest();
-					dr.type("keyword").index(collection).id(s);
+					
+					
+					//DeleteRequest dr = new DeleteRequest();
+					//dr.type("keyword").index(collection).id(s);
+					bulk.defaultType(object)
+					.addAction(new Delete.Builder(s).index(collection).type(object).build());
 					
 					//System.out.println(dr.toString());
 					
-					bulkRequest.add(dr);
+					//bulkRequest.add(dr);
 					
 				}
 				
-				BulkResponse bulkResponse = bulkRequest.execute().actionGet(); 
-				if (bulkResponse.hasFailures()) { 
-				    // process failures by iterating through each bulk response item 
-					//System.out.println("has failures");
-					log.error("ES response has failures");
+				JestResult results = client.execute(bulk.build());
+				
+				if(!results.isSucceeded()) {
+					log.error("ES response has failures " + results.getErrorMessage());
 				}
+
 				
 			}
 		}
@@ -186,14 +325,18 @@ public class SearchDelegateImpl implements SearchDelegate {
 	 * @see com.shopizer.search.services.impl.SearchService#bulkIndexKeywords(java.util.Collection, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void bulkIndexKeywords(Collection<IndexKeywordRequest> bulks, String collection, String object) {
+	public void bulkIndexKeywords(Collection<IndexKeywordRequest> bulks, String collection, String object) throws Exception {
 		
-		
-		try {
-			
 
-			Client client = searchClient.getClient();
-			BulkRequestBuilder bulkRequest = client.prepareBulk(); 
+			//Client client = searchClient.getClient();
+			
+			JestClient client = searchClient.getClient();
+			
+			//BulkRequestBuilder bulkRequest = client.prepareBulk();
+			
+			Bulk.Builder bulk = new Bulk.Builder()
+		    .defaultIndex(collection)
+		    .defaultType(object);
 			
 			//@todo, index in appropriate Locale
 			for(IndexKeywordRequest key : bulks) {
@@ -263,22 +406,19 @@ public class SearchDelegateImpl implements SearchDelegate {
                     
                 b.endObject();
 
-				
-				bulkRequest.add(client.prepareIndex(collection, object).setSource(b));
+                bulk.addAction(new Index.Builder(b.string()).build());
+				//bulkRequest.add(client.prepareIndex(collection, object).setSource(b));
 			}
 			 
 			log.debug("Adding to collection " + collection);
 			         
-			BulkResponse bulkResponse = bulkRequest.execute().actionGet(); 
-			if (bulkResponse.hasFailures()) { 
-			    // process failures by iterating through each bulk response item 
-				//System.out.println("Has failures");
-				log.error("ES response has failures");
+			JestResult results = client.execute(bulk.build());
+			
+			if(!results.isSucceeded()) {
+				log.error("ES response has failures " + results.getErrorMessage());
 			}
-		
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
+
 		
 	}
 	
@@ -289,112 +429,135 @@ public class SearchDelegateImpl implements SearchDelegate {
 	@Override
 	public com.shopizer.search.services.GetResponse getObject(String collection, String object, String id) throws Exception {
 		
+		JestClient client = searchClient.getClient();
 		
-	
+		Get get = new Get.Builder(collection, id).type(object).build();
+		
+		//System.out.println(get.getURI());
+
+		JestResult result = client.execute(get);
+		
+		
 		
 		/**
 		 * This method throws an exception
 		 */
-		GetResponse response = searchClient.getClient().prepareGet(collection, object, id)
-		.setOperationThreaded(true) 
-		.setFields("_source")
-        .execute() 
-        .actionGet();
+		//GetResponse response = searchClient.getClient().prepareGet(collection, object, id)
+		//.setOperationThreaded(true) 
+		//.setFields("_source")
+        //.execute() 
+        //.actionGet();
 				
-		
-		com.shopizer.search.services.GetResponse r = null;
-		if(response!=null) {
+		com.shopizer.search.services.GetResponse response = null;
+		if(result!=null && StringUtils.isBlank(result.getErrorMessage())) {
 			
-			r = new com.shopizer.search.services.GetResponse(response);
-			
+				
+				JsonObject jsonObject = result.getJsonObject();
+				
+				Map<String, Object> fields = this.getResults(jsonObject, "_source");
+
+				response = new com.shopizer.search.services.GetResponse(fields);
+				response.setObjectJson(result.getJsonString());
+				
+		} else {
+				log.error("Error wile performing a get method " + result.getErrorMessage());
 		}
-		
-		return r;
+
+		return response;
 		
 	}
 	
 	/* (non-Javadoc)
 	 * @see com.shopizer.search.services.impl.SearchService#search(com.shopizer.search.services.SearchRequest)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public SearchResponse search(SearchRequest request) throws Exception {
 
-		SearchResponse response = new SearchResponse();
-		try {
-			
-			//SearchClient searchClient = new SearchClient("seniorcarlos","127.0.0.1",9300);
+		   
+		
+		    JestClient client = searchClient.getClient();
+		
+		    SearchResponse response = new SearchResponse();
+
+			Search.Builder search = new Search.Builder(request.getJson());
+                // multiple index or types can be added.
+            for(String index : request.getCollections()) {
+            	search.addIndex(index);
+            }
+
 
 			
-
-			
-			org.elasticsearch.action.search.SearchRequestBuilder builder = searchClient.getClient().prepareSearch(request.getCollection())
-	        //.setQuery("{ \"term\" : { \"keyword\" : \"dynamic\" }}")
+			//org.elasticsearch.action.search.SearchRequestBuilder builder = searchClient.getClient().prepareSearch(request.getCollection())
+	        
+					
+			//.setQuery("{ \"term\" : { \"keyword\" : \"dynamic\" }}")
 			//.setQuery(request.getJson())
 			//.addHighlightedField("description")
 			//.addHighlightedField("tags")
 			//with extra you can set everything
-			.setExtraSource(request.getJson())
-	        .setExplain(false);
+			//.setExtraSource(request.getJson())
+	        //.setExplain(false);
 			
-			builder.setFrom(request.getStart());
+			
 			if(request.getSize()>-1) {
-				builder.setSize(request.getSize());
+				search.setParameter(Parameters.SIZE, request.getSize());
+				//builder.setSize(request.getSize());
 			}
 	        
-/*	        Collection<SearchField> queryStringColl = request.getTerms();
-	        StringBuilder queryBuild = new StringBuilder();
-	        if(queryStringColl==null) {
-	        	throw new Exception("terms cannot be null");
-	        }
-	        
-	        int i = 1;
-	        for(SearchField field : queryStringColl) {
-	        	
-	        	queryBuild.append(field.getField()).append(":").append(request.getSearchString());
-	        	if(i<queryStringColl.size()) {
-	        		queryBuild.append(",");
-	        	}
-	        	i++;
-	        }*/
-	        
-	        
-	        //try this block (filters)
-/*	        XContentFilterBuilder queryFilter = FilterBuilders.matchAllFilter(); 
-	        XContentQueryBuilder query = 
-	        QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), 
-	        queryFilter); 
-	        builder.setQuery(query);*/
 
-	        
-	        //                                                    _all
-	        //XContentQueryBuilder qb = QueryBuilders.queryString(field + ":" + term);
-	        //XContentQueryBuilder qb = QueryBuilders.queryString("_all" + ":" + "Tom");
-	        //XContentQueryBuilder qb = QueryBuilders.queryString(queryBuild.toString());
-	        //builder.setQuery(qb);
-	        
 
 	        //builder.setQuery(termQuery(field, term));
+			
+			SearchResult result = client.execute(search.build());
+			
+			if(result==null) {
+				throw new Exception("Search result is null");
+			}
+			
+			if(!result.isSucceeded() && !StringUtils.isBlank(result.getErrorMessage())) {
+				log.error("An error occured while searching " + result.getErrorMessage());
+				return response;
+			}
 	
-	        org.elasticsearch.action.search.SearchResponse rsp = builder.execute().actionGet();
-	        SearchHit[] docs = rsp.getHits().getHits();
+	        //org.elasticsearch.action.search.SearchResponse rsp = builder.execute().actionGet();
+	        //SearchHit[] docs = rsp.getHits().getHits();
 			List<com.shopizer.search.services.SearchHit> hits = new ArrayList<com.shopizer.search.services.SearchHit>();
 	        @SuppressWarnings("rawtypes")
 			List ids = new ArrayList();
-	        response.setCount(docs.length);
-	        for (SearchHit sd : docs) {
-	          //to get explanation you'll need to enable this when querying:
-	          //System.out.println(sd.getExplanation().toString());
+	        
+	        
+	        JsonArray responseHits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+	        response.setCount(responseHits.size());//TODO number of items instead ???
+	        
+	        
+	        //for (SearchHit sd : docs) {
+	        Iterator<JsonElement> elementsIterator = responseHits.iterator();
+	        while (elementsIterator.hasNext()) {
+	        	JsonElement element = elementsIterator.next();
+	        	
+	        	JsonObject jsonObject = element.getAsJsonObject();
+
+	        	Map<String,Object> item = this.getResults(jsonObject, "_source");
+
+	        	
+	        	JsonElement _idElement = jsonObject.get("_id");
+	        	String _id = _idElement.getAsString();
+
 	
 	          // if we use in mapping: "_source" : {"enabled" : false}
 	          // we need to include all necessary fields in query and then to use doc.getFields()
 	          // instead of doc.getSource()
 
 
-	        	log.debug("Found entry " + sd.sourceAsString());
 	            //System.out.println(sd.getScore());
-	        	com.shopizer.search.services.SearchHit hit = new com.shopizer.search.services.SearchHit(sd);
+	        	com.shopizer.search.services.SearchHit hit = new com.shopizer.search.services.SearchHit(item, _id);
+	        	//com.shopizer.search.services.SearchHit hit = new com.shopizer.search.services.SearchHit(element.getAsJsonArray());
 	        	hits.add(hit);
-	        	ids.add(sd.getId());
+	        	
+	        	
+	        	ids.add(item.get("id"));
+
 	        	//Map source = sd.getSource();
 	        	//Map highlights = sd.getHighlightFields();
 	        	//hits.add(sd);
@@ -403,166 +566,111 @@ public class SearchDelegateImpl implements SearchDelegate {
 	        }
 	        
 	        response.setIds(ids);
+	        response.setSearchHits(hits);
 	        
-	        Facets facets = rsp.getFacets();
-	        if(facets!=null) {
+	        List<TermsFacet> termsFacets = result.getFacets(TermsFacet.class);
+	        
+
+	        //TermsAggregation terms = result.getAggregations().getTermsAggregation("terms1");
+	        
+	        
+	        //Facets facets = rsp.getFacets();
+	        if(termsFacets!=null) {
 	        	Map<String,com.shopizer.search.services.Facet> facetsMap = new HashMap<String,com.shopizer.search.services.Facet>();
-	        	for (Facet facet : facets.facets()) {
-	        		 
-	        	     if (facet instanceof TermsFacet) {
-	        	         TermsFacet ff = (TermsFacet) facet;
+	        	for (TermsFacet facet : termsFacets) {
+
+	        	     //if (facet instanceof TermsFacet) {
+	        	         //TermsFacet ff = (TermsFacet) facet;
 	        	         com.shopizer.search.services.Facet f = new com.shopizer.search.services.Facet();
-	        	         f.setName(ff.getName());
+	        	         f.setName(facet.getName());
 	        	         List<com.shopizer.search.services.Entry> entries = new ArrayList<com.shopizer.search.services.Entry>();
-	        	         for(Object o : ff) {
+	        	         for(Term o : facet.terms()) {
 	        	        	 com.shopizer.search.services.Entry entry = new com.shopizer.search.services.Entry();
-	        	        	 Entry e = (Entry)o;
-	        	        	 entry.setName(e.getTerm().string());
-	        	        	 entry.setCount(e.getCount());
+	        	        	 entry.setName(o.getName());
+	        	        	 entry.setCount(o.getCount());
 	        	        	 entries.add(entry);
 	        	         }
 	        	         f.setEntries(entries);
-	        	         facetsMap.put(ff.getName(), f);
-	        	    }
-	        	     else if (facet instanceof RangeFacet) {
-	        	    	 RangeFacet ff = (RangeFacet) facet;
-	        	         com.shopizer.search.services.Facet f = new com.shopizer.search.services.Facet();
-	        	         f.setName(ff.getName());
-	        	         List<com.shopizer.search.services.Entry> entries = new ArrayList<com.shopizer.search.services.Entry>();
-	        	         for(Object o : ff) {
-	        	        	 com.shopizer.search.services.Entry entry = new com.shopizer.search.services.Entry();
-	        	        	 Entry e = (Entry)o;
-	        	        	 entry.setName(e.getTerm().string());
-	        	        	 entry.setCount(e.getCount());
-	        	        	 entries.add(entry);
-	        	         }
-	        	         f.setEntries(entries);
-	        	         facetsMap.put(ff.getName(), f);
-	        	    }
-	        	     else if (facet instanceof HistogramFacet) {
-	        	    	 HistogramFacet ff = (HistogramFacet) facet;
-	        	         com.shopizer.search.services.Facet f = new com.shopizer.search.services.Facet();
-	        	         f.setName(ff.getName());
-	        	         List<com.shopizer.search.services.Entry> entries = new ArrayList<com.shopizer.search.services.Entry>();
-	        	         for(Object o : ff) {
-	        	        	 com.shopizer.search.services.Entry entry = new com.shopizer.search.services.Entry();
-	        	        	 Entry e = (Entry)o;
-	        	        	 entry.setName(e.getTerm().string());//TODO
-	        	        	 entry.setCount(e.getCount());
-	        	        	 entries.add(entry);
-	        	         }
-	        	         f.setEntries(entries);
-	        	         facetsMap.put(ff.getName(), f);
-	        	    }
-	        	     else if (facet instanceof DateHistogramFacet) {
-	        	    	 DateHistogramFacet ff = (DateHistogramFacet) facet;
-	        	         com.shopizer.search.services.Facet f = new com.shopizer.search.services.Facet();
-	        	         f.setName(ff.getName());
-	        	         List<com.shopizer.search.services.Entry> entries = new ArrayList<com.shopizer.search.services.Entry>();
-	        	         for(Object o : ff) {
-	        	        	 com.shopizer.search.services.Entry entry = new com.shopizer.search.services.Entry();
-	        	        	 Entry e = (Entry)o;
-	        	        	 entry.setName(e.getTerm().string());//TODO
-	        	        	 entry.setCount(e.getCount());
-	        	        	 entries.add(entry);
-	        	         }
-	        	         f.setEntries(entries);
-	        	         facetsMap.put(ff.getName(), f);
-	        	    }
-	        	     else if (facet instanceof GeoDistanceFacet) {
-	        	    	 GeoDistanceFacet ff = (GeoDistanceFacet) facet;
-	        	         com.shopizer.search.services.Facet f = new com.shopizer.search.services.Facet();
-	        	         f.setName(ff.getName());
-	        	         List<com.shopizer.search.services.Entry> entries = new ArrayList<com.shopizer.search.services.Entry>();
-	        	         for(Object o : ff) {
-	        	        	 com.shopizer.search.services.Entry entry = new com.shopizer.search.services.Entry();
-	        	        	 Entry e = (Entry)o;
-	        	        	 entry.setName(e.getTerm().string());//TODO
-	        	        	 entry.setCount(e.getCount());
-	        	        	 entries.add(entry);
-	        	         }
-	        	         f.setEntries(entries);
-	        	         facetsMap.put(ff.getName(), f);
-	        	    }
+	        	         facetsMap.put(facet.getName(), f);
 	        	}
 	        	response.setFacets(facetsMap);
 	        }
 	        
 	        response.setSearchHits(hits);
 	        return response;
-        
-		} catch (Exception e) {
-			log.error(e);
-			throw e;
-		}
-		
+
 		
 	}
 
 	/* (non-Javadoc)
 	 * @see com.shopizer.search.services.impl.SearchService#searchAutocomplete(java.lang.String, java.lang.String, int)
 	 */
+	
 	@Override
-	public Set<String> searchAutocomplete(String collection,String json,int size) {
-		
-		Set<String> returnList = new HashSet();
-		
-		
-		try {
+	public Set<String> searchAutocomplete(String collection,String json,int size) throws Exception {
+
+		    JestClient client = searchClient.getClient();
+
+			Search.Builder search = new Search.Builder(json);
+			search.addIndex(collection);
+
+			SearchResult result = client.execute(search.build());
 			
-
-	       
-
-			//SearchResponse searchResponse = client.prepareSearch().setQuery("{ \"term\" : { \"field1\" : \"value1_1\" }}").execute().actionGet();
-			SearchRequestBuilder builder = searchClient.getClient().prepareSearch(collection)
-	        //.setQuery("{ \"term\" : { \"keyword\" : \"dynamic\" }}")
-			.setQuery(json)
-	        .setExplain(true);
-	        
-	        
-	        //XContentQueryBuilder qb = QueryBuilders.queryString(json);
-	        
-	        //XContentQueryBuilder qb = QueryBuilders.queryString(field + ":*" + term + "*");
-	        //this one is working
-	        //PrefixQueryBuilder qb = new PrefixQueryBuilder(field, term.toLowerCase());
-	        //builder.setQuery(qb);
-			if(size>-1) {
-				builder.setFrom(0).setSize(size);
+			if(result==null) {
+				throw new Exception("Search result is null");
 			}
-	        //builder.setQuery(json);
+			
+			if(!result.isSucceeded() && !StringUtils.isBlank(result.getErrorMessage())) {
+				log.error("An error occured while searching " + result.getErrorMessage());
+				return null;
+			}
+			
+	        JsonArray responseHits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
 	        
-	        //SearchResponse searchResponse = client.prepareSearch().setQuery("{ \"term\" : { \"field1\" : \"value1_1\" }}").execute().actionGet();
+	        Set<String> keywords = new HashSet<String>();
+	        
+	        
+	        //for (SearchHit sd : docs) {
+	        Iterator<JsonElement> elementsIterator = responseHits.iterator();
+	        while (elementsIterator.hasNext()) {
+	        	JsonElement element = elementsIterator.next();
+	        	
+	        	JsonObject jsonObject = element.getAsJsonObject();
 
+	        	Map<String,Object> item = this.getResults(jsonObject, "_source");
+	        	
+	        	keywords.add((String)item.get("keyword"));
+	        	
+	        	
+	        }
 
 	
-	        org.elasticsearch.action.search.SearchResponse rsp = builder.execute().actionGet();
-	        SearchHit[] docs = rsp.getHits().getHits();
-	        for (SearchHit sd : docs) {
+	        //org.elasticsearch.action.search.SearchResponse rsp = builder.execute().actionGet();
+	        //SearchHit[] docs = rsp.getHits().getHits();
+	        //for (SearchHit sd : docs) {
 	          //to get explanation you'll need to enable this when querying:
 	          //System.out.println(sd.getExplanation().toString());
 	
 	          // if we use in mapping: "_source" : {"enabled" : false}
 	          // we need to include all necessary fields in query and then to use doc.getFields()
 	          // instead of doc.getSource()
-	        	Map source = sd.getSource();
+	        	//Map source = sd.getSource();
 	        	//System.out.println(sd.getType());
 	        	//System.out.println(sd.getExplanation().toString());
 	        	//System.out.println(sd.fields().toString());
 	        	//System.out.println(sd.getMatchedFilters().length);
 	        	//SearchHitField f = sd.field("keyword");
-	        	String f = (String)source.get("keyword");
+	        	//String f = (String)source.get("keyword");
 	            //System.out.println(sd.sourceAsString());
 	            //System.out.println(sd.getScore());
 	        	
 	        	//returnList.add(sd.sourceAsString());
-	        	returnList.add(f.toLowerCase());
-	        }
+	        	//returnList.add(f.toLowerCase());
+	        //}
         
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
 		
-		return returnList;
+		return keywords;
 		
 	}
 

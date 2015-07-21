@@ -3,7 +3,6 @@ package com.shopizer.test;
 import javax.inject.Inject;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -14,6 +13,23 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.SearchService;
 
+
+/**
+ * curl -X POST http://localhost:9200/keyword_en_default/_search?pretty=true -d '{"query": {"match": {"keyword": {"query": "spr","analyzer": "standard"}}}}'
+ * 
+ * Get all indexed data
+ * curl -XGET 'http://localhost:9200/keyword_en_default/_search?pretty=1' 
+ * 
+ * Test if an indice exists
+ * curl -XHEAD -i 'http://localhost:9200/keyword_en_default'
+ * 
+ * Get index infos
+ * curl -XGET 'http://localhost:9200/keyword_en_default/'
+ * 
+ * 
+ * @author carlsamson
+ *
+ */
 
 @ContextConfiguration(locations = {
 		"classpath:spring/spring-context-test.xml"
@@ -30,17 +46,11 @@ public class TestSearchKeywords {
 	private SearchService searchService;
 	
 	@Test
-	@Ignore
+	//@Ignore
 	public void testSearchKeywords() throws Exception {
 		
-		//String json="{\"wildcard\":{\"keyword\":\"s*\"}}";
-		//String json="{\"term\":{\"keyword\":\"s\"}}";
-		
-		String json="{\"match\" : {\"keyword\" : {\"query\" : \"sp\",\"type\" : \"phrase_prefix\"}}}";
-		
-		//String json="{\"match\" : {\"keyword\" : {\"query\" : \"ci\",\"type\" : \"phrase_prefix\"}}}";
-		
-		//String json ="{\"query\":{\"filtered\":{\"query\":{\"text\":{\"_all\":\"beach\"}},\"filter\":{\"numeric_range\":{\"age\":{\"from\":\"22\",\"to\":\"45\",\"include_lower\":true,\"include_upper\":true}}}}},\"highlight\":{\"fields\":{\"description\":{}}},\"facets\":{\"tags\":{\"terms\":{\"field\":\"tags\"}}}}";
+
+		String json="{\"query\": {\"match\" : {\"keyword\" : {\"query\" : \"sp\",\"analyzer\" : \"standard\"}}}}";
 
 		
 		System.out.println(json);
