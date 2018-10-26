@@ -1,6 +1,28 @@
 package com.shopizer.search.services.impl;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentType;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.shopizer.search.services.IndexKeywordRequest;
+import com.shopizer.search.services.SearchRequest;
+import com.shopizer.search.services.SearchResponse;
+import com.shopizer.search.utils.SearchClient;
+
 import io.searchbox.action.Action;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
@@ -10,67 +32,11 @@ import io.searchbox.core.Get;
 import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
-import io.searchbox.core.search.facet.TermsFacet;
-import io.searchbox.core.search.facet.TermsFacet.Term;
+import io.searchbox.core.search.aggregation.TermsAggregation;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.indices.mapping.PutMapping;
 import io.searchbox.params.Parameters;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-/*import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.facet.Facet;
-import org.elasticsearch.search.facet.Facets;
-import org.elasticsearch.search.facet.datehistogram.DateHistogramFacet;
-import org.elasticsearch.search.facet.geodistance.GeoDistanceFacet;
-import org.elasticsearch.search.facet.histogram.HistogramFacet;
-import org.elasticsearch.search.facet.range.RangeFacet;
-import org.elasticsearch.search.facet.terms.TermsFacet;
-import org.elasticsearch.search.facet.terms.TermsFacet.Entry;*/
-import org.elasticsearch.common.lang3.StringUtils;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-
-
-
-
-
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.shopizer.search.services.IndexKeywordRequest;
-import com.shopizer.search.services.SearchRequest;
-import com.shopizer.search.services.SearchResponse;
-import com.shopizer.search.services.field.BooleanField;
-import com.shopizer.search.services.field.DateField;
-import com.shopizer.search.services.field.DoubleField;
-import com.shopizer.search.services.field.Field;
-import com.shopizer.search.services.field.IntegerField;
-import com.shopizer.search.services.field.ListField;
-import com.shopizer.search.services.field.LongField;
-import com.shopizer.search.services.field.StringField;
-import com.shopizer.search.utils.SearchClient;
 
 /**
  * https://www.found.no/foundation/java-clients-for-elasticsearch/
@@ -81,6 +47,16 @@ import com.shopizer.search.utils.SearchClient;
  *
  */
 public class SearchDelegateImpl implements SearchDelegate {
+	
+	private List<String> aggregationList;
+
+	public List<String> getAggregationList() {
+		return aggregationList;
+	}
+
+	public void setAggregationList(List<String> aggregationList) {
+		this.aggregationList = aggregationList;
+	}
 
 	private SearchClient searchClient = null;
 	public SearchClient getSearchClient() {
@@ -196,14 +172,16 @@ public class SearchDelegateImpl implements SearchDelegate {
 		
 		CreateIndex.Builder createIndex = new CreateIndex.Builder(index);
 				//.Builder(index);
-		if(settings!=null) {
+		if(!StringUtils.isEmpty(settings)) {
+
+			
 			createIndex.settings(
-			ImmutableSettings.builder()
-			.loadFromSource(settings)
-			.build()
-			.getAsMap());
+			        Settings.builder()
+			        .loadFromSource(settings,XContentType.JSON)
+			        .build().getAsMap());
+
 		}
-		
+				
 		client.execute(createIndex.build());
 		
 		PutMapping.Builder putMapping = new PutMapping.Builder(
@@ -277,32 +255,17 @@ public class SearchDelegateImpl implements SearchDelegate {
 			JestClient client = searchClient.getClient();
 
 			if(ids!=null && ids.size()>0) {
-				
-				//BulkRequestBuilder bulkRequest = client.prepareBulk();
-				
-				
-			    //.defaultType(object);
-			    //.addAction(new Index.Builder(article1).build())
-			    //.addAction(new Index.Builder(article2).build())
-			    //.addAction(new Delete.Builder("1").index("twitter").type("tweet").build())
-			    //.build();
+
 				
 				Bulk.Builder bulk = new Bulk.Builder()
 			    .defaultIndex(collection);
 				
 				for(String s : ids) {
 					
-					
-					
-					
-					//DeleteRequest dr = new DeleteRequest();
-					//dr.type("keyword").index(collection).id(s);
+
 					bulk.defaultType(object)
 					.addAction(new Delete.Builder(s).index(collection).type(object).build());
-					
-					//System.out.println(dr.toString());
-					
-					//bulkRequest.add(dr);
+
 					
 				}
 				
@@ -328,21 +291,16 @@ public class SearchDelegateImpl implements SearchDelegate {
 	public void bulkIndexKeywords(Collection<IndexKeywordRequest> bulks, String collection, String object) throws Exception {
 		
 
-			//Client client = searchClient.getClient();
-			
+
 			JestClient client = searchClient.getClient();
 			
-			//BulkRequestBuilder bulkRequest = client.prepareBulk();
-			
+
 			Bulk.Builder bulk = new Bulk.Builder()
 		    .defaultIndex(collection)
 		    .defaultType(object);
-			
-			//@todo, index in appropriate Locale
+
 			for(IndexKeywordRequest key : bulks) {
-			
-				// either use client#prepare, or use Requests# to directly build index/delete requests 
-				//bulkRequest.add(client.prepareIndex(collection, object, key.getId()) 
+
 				
 				String id = key.getKey();
 				if(id.length()>25) {
@@ -350,64 +308,13 @@ public class SearchDelegateImpl implements SearchDelegate {
 				}
 				id = id.trim().toLowerCase();
 				
-				XContentBuilder b = jsonBuilder() 
-                .startObject() 
-                	.field("id", id)//index name is the value trimed and lower cased
-                    .field("keyword", key.getKey())
-                    .field("_id_", key.getId());
-                    
-                    @SuppressWarnings("rawtypes")
-					Collection fields = key.getFilters();
-                    if(fields.size()>0) {
-                    	
-                    	for(Object o : fields) {
-                    		
-                    		if(o instanceof BooleanField) {
-                    			
-                    			Boolean val = ((BooleanField)o).getValue();
-                    			b.field(((Field)o).getName(), val.booleanValue());
-                    			
-                    		} else if(o instanceof IntegerField) {
-                    			
-                    			Integer val = ((IntegerField)o).getValue();
-                    			b.field(((Field)o).getName(), val.intValue());
-                    			
-                    			
-                    		} else if(o instanceof LongField) {
-                    			
-                    			Long val = ((LongField)o).getValue();
-                    			b.field(((Field)o).getName(), val.longValue());
-                    			
-                    			
-                    		} else if(o instanceof ListField) {
-                    			
-                    			@SuppressWarnings("rawtypes")
-								List val = ((ListField)o).getValue();
-                    			b.field(((Field)o).getName(), val);
-                    			
-                    		} else if(o instanceof DoubleField) {
-                    			
-                    			Double val = ((DoubleField)o).getValue();
-                    			b.field(((Field)o).getName(), val.doubleValue());
-                    			
-                    		} else if(o instanceof DateField) {
-                    			
-                    			Date val = ((DateField)o).getValue();
-                    			b.field(((Field)o).getName(), val);
-                    			
-                    		} else {
-                    			
-                    			String val = ((StringField)o).getValue();
-                    			b.field(((Field)o).getName(), val);
-                    			
-                    		}
-                    	}
-                    }
-                    
-                b.endObject();
+				StringBuilder jsonBuilder = new StringBuilder();
+				jsonBuilder.append("{\"_id_\":").append("\"").append(key.getId()).append("\",")
+						   .append("\"keyword\":").append("\"").append(key.getKey()).append("\"}");
+				
+		        Index index = new Index.Builder(jsonBuilder.toString()).index(collection).type(object).id(id).build();
 
-                bulk.addAction(new Index.Builder(b.string()).build());
-				//bulkRequest.add(client.prepareIndex(collection, object).setSource(b));
+                bulk.addAction(index);
 			}
 			 
 			log.debug("Adding to collection " + collection);
@@ -432,8 +339,6 @@ public class SearchDelegateImpl implements SearchDelegate {
 		JestClient client = searchClient.getClient();
 		
 		Get get = new Get.Builder(collection, id).type(object).build();
-		
-		//System.out.println(get.getURI());
 
 		JestResult result = client.execute(get);
 		
@@ -550,24 +455,46 @@ public class SearchDelegateImpl implements SearchDelegate {
 	          // instead of doc.getSource()
 
 
-	            //System.out.println(sd.getScore());
 	        	com.shopizer.search.services.SearchHit hit = new com.shopizer.search.services.SearchHit(item, _id);
-	        	//com.shopizer.search.services.SearchHit hit = new com.shopizer.search.services.SearchHit(element.getAsJsonArray());
 	        	hits.add(hit);
 	        	
 	        	
 	        	ids.add(item.get("id"));
 
-	        	//Map source = sd.getSource();
-	        	//Map highlights = sd.getHighlightFields();
-	        	//hits.add(sd);
-	          
-	          
 	        }
 	        
 	        response.setIds(ids);
 	        response.setSearchHits(hits);
 	        
+	        TermsAggregation terms = null;
+	        Map<String,com.shopizer.search.services.Facet> facetsMap = new HashMap<String,com.shopizer.search.services.Facet>();
+	        if(result.getAggregations()!=null)  {
+	        	
+	        	if(CollectionUtils.isNotEmpty(aggregationList)) {
+	        		for(String agg : aggregationList) {
+	        			terms = result.getAggregations().getTermsAggregation(agg);
+	        			if(terms!=null) {
+		        			List<TermsAggregation.Entry> entries = terms.getBuckets();
+			        			com.shopizer.search.services.Facet f = new com.shopizer.search.services.Facet();
+			        			f.setName(terms.getName());
+			        			List<com.shopizer.search.services.Entry> facetEntries = new ArrayList<com.shopizer.search.services.Entry>();
+			        			for(TermsAggregation.Entry ent : entries) {
+			        				//ent.getName();
+			        				com.shopizer.search.services.Entry entry = new com.shopizer.search.services.Entry();
+			        				entry.setName(ent.getKey());
+			        				entry.setCount(ent.getCount());
+			        				facetEntries.add(entry);
+			        			}
+			        			f.setEntries(facetEntries);
+			        			facetsMap.put(f.getName(), f);
+		        			}
+	        		}
+	        	}	
+	        	response.setFacets(facetsMap);
+	        	
+	        }
+	        
+	        /*
 	        List<TermsFacet> termsFacets = result.getFacets(TermsFacet.class);
 	        
 
@@ -595,7 +522,7 @@ public class SearchDelegateImpl implements SearchDelegate {
 	        	}
 	        	response.setFacets(facetsMap);
 	        }
-	        
+*/	        
 	        response.setSearchHits(hits);
 	        return response;
 

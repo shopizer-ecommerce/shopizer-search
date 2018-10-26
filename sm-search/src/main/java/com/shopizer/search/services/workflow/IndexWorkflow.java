@@ -8,9 +8,9 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopizer.search.services.worker.ExecutionContext;
 import com.shopizer.search.services.worker.IndexWorker;
 
@@ -20,16 +20,19 @@ public class IndexWorkflow extends Workflow {
 	
 	private static Logger log = Logger.getLogger(IndexWorkflow.class);
 	
+	@SuppressWarnings("rawtypes")
 	private List indexWorkflow;
 	
+	@SuppressWarnings("rawtypes")
 	public List getIndexWorkflow() {
 		return indexWorkflow;
 	}
 
-	public void setIndexWorkflow(List indexWorkflow) {
+	public void setIndexWorkflow(@SuppressWarnings("rawtypes") List indexWorkflow) {
 		this.indexWorkflow = indexWorkflow;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void index(String json, String collection, String object) throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();

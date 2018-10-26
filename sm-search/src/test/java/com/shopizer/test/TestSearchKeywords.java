@@ -2,7 +2,6 @@ package com.shopizer.test;
 
 import javax.inject.Inject;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -10,6 +9,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.SearchService;
 
@@ -46,11 +46,12 @@ public class TestSearchKeywords {
 	private SearchService searchService;
 	
 	@Test
-	//@Ignore
 	public void testSearchKeywords() throws Exception {
 		
 
-		String json="{\"query\": {\"match\" : {\"keyword\" : {\"query\" : \"sp\",\"analyzer\" : \"standard\"}}}}";
+		//String json="{\"query\": {\"match\" : {\"keyword\" : {\"query\" : \"wa\",\"analyzer\" : \"standard\"}}}}";
+		//String json="{\"size\": 10,\"query\": {\"match\" : {\"keyword\" : \"wa\"}}}";
+		String json="{\"size\": 10,\"query\": {\"match\": {\"keyword\": {\"query\": \"wat\",\"operator\":\"and\"}}}}";
 
 		
 		System.out.println(json);

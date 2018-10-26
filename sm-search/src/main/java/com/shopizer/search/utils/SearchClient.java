@@ -7,8 +7,8 @@ import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.config.HttpClientConfig;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.node.Node;
 
 
@@ -56,12 +56,12 @@ public class SearchClient {
 
 	
 	
-	public void stopClient() {
+/*	public void stopClient() {
 		
 		if(node!=null) {
 			node.close();
 		}
-	}
+	}*/
 	
 	private synchronized void initClient() {
 		

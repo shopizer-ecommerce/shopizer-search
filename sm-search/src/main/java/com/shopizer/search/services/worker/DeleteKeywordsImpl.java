@@ -6,11 +6,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.inject.Inject;
-
-
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -19,7 +16,6 @@ import com.shopizer.search.services.SearchRequest;
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.impl.SearchDelegate;
 import com.shopizer.search.utils.CustomIndexConfiguration;
-import com.shopizer.search.utils.DynamicIndexNameUtil;
 import com.shopizer.search.utils.SearchClient;
 
 

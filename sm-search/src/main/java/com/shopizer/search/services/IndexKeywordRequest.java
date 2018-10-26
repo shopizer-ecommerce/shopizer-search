@@ -10,6 +10,10 @@ import com.shopizer.search.services.field.Field;
 
 public class IndexKeywordRequest implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String id;
 	//private Locale locale;
 	private String key;

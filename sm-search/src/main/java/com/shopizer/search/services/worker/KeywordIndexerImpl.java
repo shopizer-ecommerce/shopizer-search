@@ -6,11 +6,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.inject.Inject;
-
-
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -27,7 +24,6 @@ import com.shopizer.search.services.impl.SearchDelegate;
 import com.shopizer.search.utils.CustomIndexConfiguration;
 import com.shopizer.search.utils.CustomIndexFieldConfiguration;
 import com.shopizer.search.utils.DateUtil;
-import com.shopizer.search.utils.DynamicIndexNameUtil;
 import com.shopizer.search.utils.FileUtil;
 import com.shopizer.search.utils.SearchClient;
 
@@ -64,8 +60,7 @@ public class KeywordIndexerImpl implements IndexWorker {
 		if(init) {
 			return;
 		}
-		
-		init = true;
+
 		try {
 			
 			if(indexConfigurations!=null) {
@@ -112,7 +107,7 @@ public class KeywordIndexerImpl implements IndexWorker {
 
 							if(!StringUtils.isBlank(ic.getIndexName())) {
 								
-								if(!searchDelegate.indexExist(ic.getCollectionName())) {
+								if(ic.getCollectionName() != null && !searchDelegate.indexExist(ic.getCollectionName())) {
 									searchDelegate.createIndice(metadata, settingsdata, ic.getCollectionName(), ic.getIndexName());
 								}
 							}
@@ -125,10 +120,6 @@ public class KeywordIndexerImpl implements IndexWorker {
 							init=false;
 						}
 					}
-
-					
-					
-
 				}
 				
 			}
@@ -157,8 +148,6 @@ public class KeywordIndexerImpl implements IndexWorker {
 			try {
 				
 
-		
-			//new logic
 			if(indexConfigurationsMap!=null && indexConfigurationsMap.containsKey(object)) {
 				
 				

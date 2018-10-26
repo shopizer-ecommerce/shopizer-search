@@ -3,17 +3,17 @@ package com.shopizer.search.services;
 public class Entry {
 	
 	private String name;
-	private int count;
+	private long count;
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	public int getCount() {
+	public long getCount() {
 		return count;
 	}
-	public void setCount(int count) {
+	public void setCount(long count) {
 		this.count = count;
 	}
 

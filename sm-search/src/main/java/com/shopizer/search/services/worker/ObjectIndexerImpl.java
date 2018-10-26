@@ -9,8 +9,8 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopizer.search.services.impl.SearchDelegate;
 import com.shopizer.search.utils.FileUtil;
 import com.shopizer.search.utils.IndexConfiguration;
@@ -45,7 +45,6 @@ public class ObjectIndexerImpl implements IndexWorker {
 			return;
 		}
 
-		init = true;
 		if(getIndexConfigurations()!=null && getIndexConfigurations().size()>0) {
 
 				for(Object o : indexConfigurations) {
@@ -90,7 +89,8 @@ public class ObjectIndexerImpl implements IndexWorker {
 							init=false;
 						}
 					}
-				} 
+				}
+				init = true;
 		} 
 	}
 

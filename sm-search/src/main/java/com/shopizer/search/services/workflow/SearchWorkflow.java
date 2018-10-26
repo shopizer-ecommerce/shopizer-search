@@ -55,19 +55,12 @@ public class SearchWorkflow extends Workflow{
 	
 	public SearchResponse search(SearchRequest request) throws Exception {
 		
-		//SearchServiceImpl service = new SearchServiceImpl();
-		//SearchResponse response = service.search(request);
 
-		//response.setInputSearchJson(request.getJson());
 		SearchResponse response = null;
 
 		
 		if(searchFlow!=null) {
 			for(Object o : searchFlow) {
-				
-				//String className = (String)o;
-				//SearchWorker search = (SearchWorker)Class.forName(className).newInstance();
-				//search.execute(request.getJson(), request.getCollection());
 				SearchWorker sw = (SearchWorker)o;
 				response = sw.execute(super.getSearchClient(),request, null);
 			}
