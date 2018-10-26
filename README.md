@@ -1,8 +1,13 @@
 # shopizer-search
-Search wrapper to elasticsearch used within shopizer
+
+Search wrapper for Elastic Search used as a dependency to Shopizer
 
 integrated in shopizer
 
-Uses elastic search version 1.4 and up
+Supports Elastic Search < 6
 
-Uses the REST API instead of the native API
+Tested with Elastic Search 5.6.12
+
+Uses the Jest API
+
+Copy src/test/resources/spring to Shopizer sm-core resources equivalent folder

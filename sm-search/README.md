@@ -1,6 +1,6 @@
 # shopizer-search
 
-Search wrapper to Elastic Search used as a dependency to Shopizer
+Search wrapper for Elastic Search used as a dependency to Shopizer
 
 integrated in shopizer
 
