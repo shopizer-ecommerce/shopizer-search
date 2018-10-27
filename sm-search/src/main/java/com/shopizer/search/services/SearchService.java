@@ -68,16 +68,13 @@ public class SearchService {
 		
 		return getWorkflow.getObject(collection,object,id);
 	}
-	
+
 	/**
 	 * Index a document
-	 * @param json
-	 * @param collection (name of the collection)
-	 * Might be product_en or product_fr or any name of the index container
-	 * @param object
-	 * That corresponds to the name of the entity to be indexed as defined in the
-	 * indice file (product.json). In this case it will be product
-	 * @param id
+	 * @param json Represent ES json file to index
+	 * @param collection (name of the collection) Might be product_en or product_fr or any name of the index container
+	 * @param object corresponds to the name of the entity to be indexed as defined in the
+	 * @throws Exception Exception when indexing
 	 */
 	public void index(String json, String collection, String object) throws Exception {
 

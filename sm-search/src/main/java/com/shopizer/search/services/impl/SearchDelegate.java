@@ -13,6 +13,11 @@ public interface SearchDelegate {
 
 	/**
 	 * Creates a structure that represents the object and the content to be indexed
+	 * @param mappingJson ES json mapping
+	 * @param settingsJson ES json setting
+	 * @param collection collection name
+	 * @param object object to index
+	 * @throws Exception thrown
 	 */
 	void createIndice(String mappingJson, String settingsJson, String collection,
 			String object) throws Exception;
@@ -20,9 +25,11 @@ public interface SearchDelegate {
 	/**
 	 * Will index an object in json format in a collection
 	 * of indexes
-	 * @param collection
-	 * @param object
-	 * @param id
+	 * @param json ES json file
+	 * @param collection name of the collection
+	 * @param object name of the object
+	 * @param id id of the entry
+	 * @throws Exception Exception thrown
 	 */
 	void index(String json, String collection, String object,
 			String id) throws Exception;
@@ -35,10 +42,9 @@ public interface SearchDelegate {
 
 	/**
 	 * Index keywords in bulk
-	 * @param bulks
-	 * @param collection
-	 * @param object
-	 * @param id
+	 * @param bulks Objects to index
+	 * @param collection name of the collection
+	 * @param object name of the object to index
 	 */
 	void bulkIndexKeywords(
 			Collection<IndexKeywordRequest> bulks, String collection,
@@ -48,11 +54,10 @@ public interface SearchDelegate {
 			String collection, String object, String id) throws Exception;
 
 	/**
-	 * Search for a term
-	 * @param term
-	 * @param collection
-	 * @param field
-	 * @return
+	 * 
+	 * @param request Search request
+	 * @return SearchResponse
+	 * @throws Exception thrown
 	 */
     SearchResponse search(SearchRequest request)
 			throws Exception;
