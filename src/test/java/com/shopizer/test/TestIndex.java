@@ -21,6 +21,8 @@ import com.shopizer.search.services.SearchService;
 })
 
 /**
+ * Elasticsearch < 6
+ * 
  * Test if the server is running
  * curl -X GET 'http://localhost:9200'
  * 

@@ -15,7 +15,7 @@ import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.SearchService;
 
 /**
- * search api
+ * search api Elasticsearch < 6
  * 
  * Get all indexed data
  * curl -XGET 'http://localhost:9200/product_en_default/_search?pretty=1' 
@@ -76,8 +76,6 @@ public class TestSearch {
 		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*watch*\", \"use_dis_max\" : true }}";
 
 		String query = q + "," + aggregations + "}";
-		
-		System.out.println(query);
 
 
 		SearchRequest request = new SearchRequest();
