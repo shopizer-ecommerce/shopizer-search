@@ -71,14 +71,13 @@ public class SearchService {
 	
 	/**
 	 * Index a document
-	 * @param json
-	 * @param collection (name of the collection)
-	 * Might be product_en or product_fr or any name of the index container
-	 * @param object
-	 * That corresponds to the name of the entity to be indexed as defined in the
+	 * @param json - input string
+	 * @param collection (name of the collection) Might be product_en or product_fr or any name of the index container
+	 * @param object to index that corresponds to the name of the entity to be indexed as defined in the
 	 * indice file (product.json). In this case it will be product
-	 * @param id
+	 * @throws Exception indexing fails
 	 */
+
 	public void index(String json, String collection, String object) throws Exception {
 
 		indexWorkflow.index(json, collection, object);

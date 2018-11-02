@@ -11,8 +11,14 @@ public interface SearchDelegate {
 
 	public boolean indexExist(String indexName) throws Exception;
 
+
 	/**
 	 * Creates a structure that represents the object and the content to be indexed
+	 * @param mappingJson string
+	 * @param settingsJson settings definition
+	 * @param collection name
+	 * @param object representation of index
+	 * @throws Exception when index cannot be created
 	 */
 	void createIndice(String mappingJson, String settingsJson, String collection,
 			String object) throws Exception;
@@ -20,9 +26,11 @@ public interface SearchDelegate {
 	/**
 	 * Will index an object in json format in a collection
 	 * of indexes
-	 * @param collection
-	 * @param object
-	 * @param id
+	 * @param json string
+	 * @param collection name
+	 * @param object to be indexed
+	 * @param id of object to index
+	 * @throws Exception when index cannot be created
 	 */
 	void index(String json, String collection, String object,
 			String id) throws Exception;
@@ -35,10 +43,10 @@ public interface SearchDelegate {
 
 	/**
 	 * Index keywords in bulk
-	 * @param bulks
-	 * @param collection
-	 * @param object
-	 * @param id
+	 * @param bulks indexes
+	 * @param collection name
+	 * @param object to be indexed
+	 * @throws Exception when index cannot be created
 	 */
 	void bulkIndexKeywords(
 			Collection<IndexKeywordRequest> bulks, String collection,
@@ -47,12 +55,12 @@ public interface SearchDelegate {
 	com.shopizer.search.services.GetResponse getObject(
 			String collection, String object, String id) throws Exception;
 
+
 	/**
 	 * Search for a term
-	 * @param term
-	 * @param collection
-	 * @param field
+	 * @param request Search request
 	 * @return
+	 * @throws Exception when search fails
 	 */
     SearchResponse search(SearchRequest request)
 			throws Exception;
