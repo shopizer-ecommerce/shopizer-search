@@ -1,4 +1,4 @@
-# shopizer-search
+# shopizer-search - 2.4.0
 
 Search wrapper to Elastic Search used as a dependency to Shopizer
 

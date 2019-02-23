@@ -20,13 +20,17 @@ public class KeywordSearchWorkerImpl implements KeywordSearchWorker {
 
 		Collection<String> hits = searchDelegate.searchAutocomplete(collection, json, size);
 		SearchResponse resp = new SearchResponse();
+		
+		if(hits!=null) {
 
-		String[] array = (String[])hits.toArray(new String[hits.size()]);
+			String[] array = (String[])hits.toArray(new String[hits.size()]);
+			
+			
+			resp.setInlineSearchList(array);
+			if(array.length>0) {
+				resp.setCount(array.length);
+			}
 		
-		
-		resp.setInlineSearchList(array);
-		if(array.length>0) {
-			resp.setCount(array.length);
 		}
 		
 	    return resp; 
