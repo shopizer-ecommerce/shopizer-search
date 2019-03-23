@@ -25,6 +25,15 @@
 		
 		<property name="proxyUser" value=""/>
 		<property name="proxyPassword" value=""/>
+		
+		<!-- TODO XPACK credentials
+			 Have you installed XPack ? If so then security is enabled on elasticsearch which is absolutely great
+			 So in order to perform requests, enable security here
+			 Default credentials are elastic - changeme
+		 -->
+		<property name="securityEnabled" value="true"/>
+		<property name="elasticSearchUser" value="elastic"/>
+		<property name="elasticSearchPassword" value="changeme"/>
 	</bean>
 
 	

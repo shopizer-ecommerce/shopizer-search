@@ -1,64 +1,90 @@
 package com.shopizer.search.utils;
 
 public class ServerConfiguration {
-	
 
-	/** Configuration information **/
-	private String mode;
-	private String clusterHost;
-	private int clusterPort;
-	private String clusterName;
-	private String proxyUser;
-	private String proxyPassword;
-	
-	public String getClusterName() {
-		return clusterName;
-	}
 
-	public void setClusterName(String clusterName) {
-		this.clusterName = clusterName;
-	}
+  /** Configuration information **/
+  private String mode;
+  private String clusterHost;
+  private int clusterPort;
+  private String clusterName;
+  private String proxyUser;
+  private String proxyPassword;
+  private Boolean securityEnabled;
+  private String elasticSearchUser;
+  private String elasticSearchPassword;
 
-	public String getMode() {
-		return mode;
-	}
+  public String getClusterName() {
+    return clusterName;
+  }
 
-	public void setMode(String mode) {
-		this.mode = mode;
-	}
+  public void setClusterName(String clusterName) {
+    this.clusterName = clusterName;
+  }
 
-	public String getClusterHost() {
-		return clusterHost;
-	}
+  public String getMode() {
+    return mode;
+  }
 
-	public void setClusterHost(String clusterHost) {
-		this.clusterHost = clusterHost;
-	}
+  public void setMode(String mode) {
+    this.mode = mode;
+  }
 
-	public int getClusterPort() {
-		return clusterPort;
-	}
+  public String getClusterHost() {
+    return clusterHost;
+  }
 
-	public void setClusterPort(int clusterPort) {
-		this.clusterPort = clusterPort;
-	}
+  public void setClusterHost(String clusterHost) {
+    this.clusterHost = clusterHost;
+  }
 
-	public String getProxyUser() {
-		return proxyUser;
-	}
+  public int getClusterPort() {
+    return clusterPort;
+  }
 
-	public void setProxyUser(String proxyUser) {
-		this.proxyUser = proxyUser;
-	}
+  public void setClusterPort(int clusterPort) {
+    this.clusterPort = clusterPort;
+  }
 
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
+  public String getProxyUser() {
+    return proxyUser;
+  }
 
-	public void setProxyPassword(String proxyPassword) {
-		this.proxyPassword = proxyPassword;
-	}
+  public void setProxyUser(String proxyUser) {
+    this.proxyUser = proxyUser;
+  }
 
+  public String getProxyPassword() {
+    return proxyPassword;
+  }
+
+  public void setProxyPassword(String proxyPassword) {
+    this.proxyPassword = proxyPassword;
+  }
+
+  public Boolean getSecurityEnabled() {
+    return securityEnabled;
+  }
+
+  public void setSecurityEnabled(Boolean securityEnabled) {
+    this.securityEnabled = securityEnabled;
+  }
+
+  public String getElasticSearchUser() {
+    return elasticSearchUser;
+  }
+
+  public void setElasticSearchUser(String elasticSearchUser) {
+    this.elasticSearchUser = elasticSearchUser;
+  }
+
+  public String getElasticSearchPassword() {
+    return elasticSearchPassword;
+  }
+
+  public void setElasticSearchPassword(String elasticSearchPassword) {
+    this.elasticSearchPassword = elasticSearchPassword;
+  }
 
 
 

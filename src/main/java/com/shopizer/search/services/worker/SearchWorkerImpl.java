@@ -1,7 +1,6 @@
 package com.shopizer.search.services.worker;
 
 import javax.inject.Inject;
-
 import com.shopizer.search.services.SearchRequest;
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.impl.SearchDelegate;
@@ -9,21 +8,22 @@ import com.shopizer.search.utils.SearchClient;
 
 
 public class SearchWorkerImpl implements SearchWorker {
-	
-	@Inject
-	private SearchDelegate searchDelegate;
 
-	public SearchResponse execute(SearchClient client, SearchRequest request, ExecutionContext context) throws Exception{
+  @Inject
+  private SearchDelegate searchDelegate;
 
-		SearchResponse response = searchDelegate.search(request);
+  public SearchResponse execute(SearchClient client, SearchRequest request,
+      ExecutionContext context) throws Exception {
 
-		response.setInputSearchJson(request.getJson());
-		if(context == null) {
-			context = new ExecutionContext();
-		}
-		context.setObject("response", response);
-		return response;
+    SearchResponse response = searchDelegate.search(request);
 
-	}
+    response.setInputSearchJson(request.getJson());
+    if (context == null) {
+      context = new ExecutionContext();
+    }
+    context.setObject("response", response);
+    return response;
+
+  }
 
 }

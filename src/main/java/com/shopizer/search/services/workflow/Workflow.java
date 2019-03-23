@@ -4,25 +4,25 @@ import com.shopizer.search.utils.SearchClient;
 
 public class Workflow {
 
-	private SearchClient searchClient;
+  private SearchClient searchClient;
 
 
 
-	public SearchClient getSearchClient() {
-		return searchClient;
-	}
+  public SearchClient getSearchClient() {
+    return searchClient;
+  }
 
 
 
-	public void setSearchClient(SearchClient searchClient) {
-		this.searchClient = searchClient;
-	}
+  public void setSearchClient(SearchClient searchClient) {
+    this.searchClient = searchClient;
+  }
 
 
 
-	public Workflow() {
-		super();
-	}
+  public Workflow() {
+    super();
+  }
 
 
 

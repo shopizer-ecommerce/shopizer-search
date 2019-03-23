@@ -5,70 +5,70 @@ import java.util.Map;
 
 /**
  * Object used for autocomplete and regular search
+ * 
  * @author Carl Samson
  *
  */
 public class SearchResponse {
-	
-	private String inputSearchJson;
-	private Collection<String> ids;
-	private int count;
+
+  private String inputSearchJson;
+  private Collection<String> ids;
+  private int count;
 
 
-	private Collection<SearchHit> searchHits;
-	private Map<String,Facet> facets;
-	
-	public Map<String,Facet> getFacets() {
-		return facets;
-	}
+  private Collection<SearchHit> searchHits;
+  private Map<String, Facet> facets;
 
-	public void setFacets(Map<String,Facet> facets) {
-		this.facets = facets;
-	}
+  public Map<String, Facet> getFacets() {
+    return facets;
+  }
 
-	private String[] inlineSearchList;
-	
-	
-	public String[] getInlineSearchList() {
-		return inlineSearchList;
-	}
+  public void setFacets(Map<String, Facet> facets) {
+    this.facets = facets;
+  }
 
-	public void setInlineSearchList(String[] inlineSearchList) {
-		this.inlineSearchList = inlineSearchList;
-	}
+  private String[] inlineSearchList;
 
-	public Collection<SearchHit> getSearchHits() {
-		return searchHits;
-	}
 
-	public void setSearchHits(Collection searchHits) {
-		this.searchHits = searchHits;
-	}
+  public String[] getInlineSearchList() {
+    return inlineSearchList;
+  }
 
-	public String getInputSearchJson() {
-		return inputSearchJson;
-	}
+  public void setInlineSearchList(String[] inlineSearchList) {
+    this.inlineSearchList = inlineSearchList;
+  }
 
-	public void setInputSearchJson(String inputSearchJson) {
-		this.inputSearchJson = inputSearchJson;
-	}
-	
-	public Collection<String> getIds() {
-		return ids;
-	}
+  public Collection<SearchHit> getSearchHits() {
+    return searchHits;
+  }
 
-	public void setIds(Collection<String> ids) {
-		this.ids = ids;
-	}
+  public void setSearchHits(Collection searchHits) {
+    this.searchHits = searchHits;
+  }
 
-	public int getCount() {
-		return count;
-	}
+  public String getInputSearchJson() {
+    return inputSearchJson;
+  }
 
-	public void setCount(int count) {
-		this.count = count;
-	}
+  public void setInputSearchJson(String inputSearchJson) {
+    this.inputSearchJson = inputSearchJson;
+  }
 
+  public Collection<String> getIds() {
+    return ids;
+  }
+
+  public void setIds(Collection<String> ids) {
+    this.ids = ids;
+  }
+
+  public int getCount() {
+    return count;
+  }
+
+  public void setCount(int count) {
+    this.count = count;
+  }
 
 
 
