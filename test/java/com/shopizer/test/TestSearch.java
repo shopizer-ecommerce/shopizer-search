@@ -71,9 +71,9 @@ public class TestSearch {
 		String facets = "\"aggregations\": {\"categories\": {\"terms\": {\"field\": \"categories\"}},\"manufacturer\": {\"terms\": {\"field\": \"manufacturer\"}}}";
 		//String facets = "\"facets\" : { \"categories\" : { \"terms\" : {\"field\" : \"categories\"}}}";
 		
-		//String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*spr*\", \"use_dis_max\" : true }}";
+		//String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*spr*\"}}";
 
-		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"bufle\", \"use_dis_max\" : true }}";
+		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"bufle\"}}";
 
 		
 		String query = q + "," + facets + "}";

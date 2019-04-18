@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.shopizer.search.services.SearchHit;
 import com.shopizer.search.services.SearchRequest;
 import com.shopizer.search.services.SearchResponse;
@@ -42,6 +43,10 @@ public class DeleteKeywordsImpl implements DeleteObjectWorker {
           // build a search string for retrieving the internal id of the keyword
           String query = new StringBuilder().append("{\"query\":{\"term\" : {\"_id_\" : \"")
               .append(id).append("\" }}}").toString();
+          
+          if(StringUtils.isBlank(indexConfiguration.getCollectionName())) {
+            return;
+          }
 
           SearchRequest sr = new SearchRequest();
           sr.addCollection(indexConfiguration.getCollectionName());

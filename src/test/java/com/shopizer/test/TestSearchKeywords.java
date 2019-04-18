@@ -12,6 +12,9 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.SearchService;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -61,6 +64,8 @@ public class TestSearchKeywords {
 		ObjectMapper mapper = new ObjectMapper();
 		String indexData = mapper.writeValueAsString(resp);
 		System.out.println(indexData);
+		System.out.println("It is 4 - " + resp.getCount());
+
 		
 		
 	}

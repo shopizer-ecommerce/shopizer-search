@@ -1,11 +1,18 @@
-        {"index": {
-            "analysis": {
-                "analyzer": {
-                    "custom_analyzer": {
-                        "type": "snowball",
-                        "language": "English"
-                    }
-                }
-            }
-        }
-        }
+
+	{"analysis": {
+		"filter": {
+			"englishStopWords": {
+				"type": "stop",
+				"stopwords": "_english_"
+			}
+		},
+		"analyzer": {
+			"nameAnalyzer": {
+				"tokenizer": "standard",
+				"filter": [
+					"lowercase",
+					"englishStopWords"
+				]
+			}
+		}
+	}}

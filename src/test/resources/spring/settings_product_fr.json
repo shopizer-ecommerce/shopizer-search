@@ -1,11 +1,17 @@
-        {"index": {
-            "analysis": {
-                "analyzer": {
-                    "custom_analyzer": {
-                        "type": "snowball",
-                        "language": "English"
-                    }
-                }
-            }
-        }
-        }
+  {"analysis": {
+		"filter": {
+			"frenchStopWords": {
+				"type": "stop",
+				"stopwords": "_french_"
+			}
+		},
+		"analyzer": {
+			"nameAnalyzer": {
+				"tokenizer": "standard",
+				"filter": [
+					"lowercase",
+					"frenchStopWords"
+				]
+			}
+		}
+	}}

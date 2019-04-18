@@ -11,8 +11,6 @@ import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -178,10 +176,13 @@ public class SearchDelegateImpl implements SearchDelegate {
     CreateIndex.Builder createIndex = new CreateIndex.Builder(index);
     // .Builder(index);
     if (!StringUtils.isEmpty(settings)) {
-
-
-      createIndex.settings(
-          Settings.builder().loadFromSource(settings, XContentType.JSON).build().getAsMap());
+      createIndex.
+          settings(
+              settings
+              /** ES 6.X removed getAsMap, set String **/
+              //Settings.builder().loadFromSource(
+              //    settings, XContentType.JSON).build().getAsMap()
+            );
 
     }
 
@@ -431,8 +432,9 @@ public class SearchDelegateImpl implements SearchDelegate {
 
 
     // builder.setQuery(termQuery(field, term));
+    Search searchBuilder = search.build();
 
-    SearchResult result = client.execute(search.build());
+    SearchResult result = client.execute(searchBuilder);
 
     if (result == null) {
       throw new Exception("Search result is null");

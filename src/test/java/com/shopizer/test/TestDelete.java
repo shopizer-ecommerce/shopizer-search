@@ -29,10 +29,9 @@ public class TestDelete {
 	private SearchService searchService;
 	
 	@Test
-	//@Ignore
 	public void testDelete() throws Exception {
 
-		searchService.deleteObject("product_en_default", "product_en", "1");
+		searchService.deleteObject("product_en_default", "product_en", "3");
 		
 		System.out.println("Done !");
 		

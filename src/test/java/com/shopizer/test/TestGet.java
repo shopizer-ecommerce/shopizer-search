@@ -1,10 +1,7 @@
 package com.shopizer.test;
 
 import java.util.Map;
-
 import javax.inject.Inject;
-
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -12,7 +9,6 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.util.Assert;
-
 import com.shopizer.search.services.GetResponse;
 import com.shopizer.search.services.SearchService;
 
@@ -38,11 +34,10 @@ public class TestGet {
 	private SearchService searchService;
 	
 	@Test
-	//@Ignore
 	public void testGet() throws Exception {
 		
 		/** requires to index at least a product first **/
-		GetResponse response = searchService.getObject("product_en_default", "product_en", "1");
+		GetResponse response = searchService.getObject("product_en_default", "product_en", "2");
 
 		
 		Map<String, Object> fieldMap = response.getFieldMap();

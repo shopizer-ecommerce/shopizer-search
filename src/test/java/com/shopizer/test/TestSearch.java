@@ -21,7 +21,7 @@ import com.shopizer.search.services.SearchService;
  * curl -XGET 'http://localhost:9200/product_en_default/_search?pretty=1' 
  * 
  * Search
- * curl -XGET 'http://localhost:9200/product_en_default/_search' -d '{"query":{"query_string":{"fields" : ["name^5", "description", "tags"], "query" : "*spr*", "use_dis_max" : true }},"facets" : { "categories" : { "terms" : {"field" : "categories"}}}}'
+ * curl -XGET 'http://localhost:9200/product_en_default/_search' -d '{"query":{"query_string":{"fields" : ["name^5", "description", "tags"], "query" : "*spr*"}},"facets" : { "categories" : { "terms" : {"field" : "categories"}}}}'
  * 
  * @author carlsamson
  *
@@ -43,7 +43,7 @@ public class TestSearch {
 	@Test
 	public void testSearch() throws Exception {
 
-		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*watch*\", \"use_dis_max\" : true }}}";
+		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*watch*\"}}}";
 
 		String query = q;
 		
@@ -54,9 +54,6 @@ public class TestSearch {
 		request.setJson(query);
 		request.setSize(20);
 		request.setStart(0);
-		
-		
-		System.out.println(query);
 
 		SearchResponse resp= searchService.search(request);
 		
@@ -71,11 +68,12 @@ public class TestSearch {
 	public void testSearchWithAggregations() throws Exception {
 		
 
-		String aggregations = "\"aggs\" : { \"categories\" : { \"terms\" : {\"field\" : \"categories\"}}}";
+	    String aggregations = "\"aggs\" : { \"categories\" : { \"terms\" : {\"field\" : \"categories\"}}}";
 		
-		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*watch*\", \"use_dis_max\" : true }}";
+		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*watch*\"}}";
 
 		String query = q + "," + aggregations + "}";
+		//String query = q + "}";
 
 
 		SearchRequest request = new SearchRequest();
