@@ -1,7 +1,7 @@
 package com.shopizer.test;
 
 import javax.inject.Inject;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -23,6 +23,7 @@ import com.shopizer.search.services.SearchService;
 /**
  * @author carlsamson
  */
+@Ignore
 public class TestDelete {
 	
 	@Inject
@@ -31,7 +32,7 @@ public class TestDelete {
 	@Test
 	public void testDelete() throws Exception {
 
-		searchService.deleteObject("product_en_default", "product_en", "3");
+		searchService.deleteObject("product_en_default", "3");
 		
 		System.out.println("Done !");
 		

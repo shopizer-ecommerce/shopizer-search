@@ -1,5 +1,6 @@
 package com.shopizer.search.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Facet {
@@ -22,6 +23,6 @@ public class Facet {
     this.entries = entries;
   }
 
-  private List<Entry> entries;
+  private List<Entry> entries = new ArrayList<Entry>();
 
 }

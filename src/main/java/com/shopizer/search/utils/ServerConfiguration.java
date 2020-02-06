@@ -5,6 +5,7 @@ public class ServerConfiguration {
 
   /** Configuration information **/
   private String mode;
+  private String protocole;
   private String clusterHost;
   private int clusterPort;
   private String clusterName;
@@ -86,6 +87,13 @@ public class ServerConfiguration {
     this.elasticSearchPassword = elasticSearchPassword;
   }
 
+  public String getProtocole() {
+    return protocole;
+  }
+
+  public void setProtocole(String protocole) {
+    this.protocole = protocole;
+  }
 
 
 }

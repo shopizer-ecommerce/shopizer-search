@@ -16,40 +16,55 @@ public interface SearchDelegate {
    * 
    * @param mappingJson string
    * @param settingsJson settings definition
-   * @param collection name
-   * @param object representation of index
+   * @param index name
    * @throws Exception when index cannot be created
    */
-  void createIndice(String mappingJson, String settingsJson, String collection, String object)
+  void createIndice(String mappingJson, String settingsJson, String index)
       throws Exception;
 
   /**
    * Will index an object in json format in a collection of indexes
    * 
    * @param json string
-   * @param collection name
-   * @param object to be indexed
+   * @param index name
    * @param id of object to index
    * @throws Exception when index cannot be created
    */
-  void index(String json, String collection, String object, String id) throws Exception;
+  void index(String json, String index, String id) throws Exception;
 
-  void delete(String collection, String object, String id) throws Exception;
+  /**
+   * @param index name of index
+   * @param id of object to delete
+   * @throws Exception thrown
+   */
+  void delete(String index, String id) throws Exception;
 
-  void bulkDeleteIndex(Collection<String> ids, String collection, String object) throws Exception;
+  /**
+   * 
+   * @param ids collection of ids
+   * @param index name of index
+   * @throws Exception thrown
+   */
+  void bulkDeleteIndex(Collection<String> ids, String index) throws Exception;
 
   /**
    * Index keywords in bulk
    * 
    * @param bulks indexes
-   * @param collection name
-   * @param object to be indexed
+   * @param index name
    * @throws Exception when index cannot be created
    */
-  void bulkIndexKeywords(Collection<IndexKeywordRequest> bulks, String collection, String object)
+  void bulkIndexKeywords(Collection<IndexKeywordRequest> bulks, String index)
       throws Exception;
 
-  com.shopizer.search.services.GetResponse getObject(String collection, String object, String id)
+  /**
+   * 
+   * @param index name of index
+   * @param id of object to retrieve
+   * @return GetResponse
+   * @throws Exception thrown
+   */
+  com.shopizer.search.services.GetResponse getObject(String index, String id)
       throws Exception;
 
 
@@ -57,11 +72,19 @@ public interface SearchDelegate {
    * Search for a term
    * 
    * @param request Search request
-   * @return
+   * @return SearchResponse
    * @throws Exception when search fails
    */
   SearchResponse search(SearchRequest request) throws Exception;
 
-  Set<String> searchAutocomplete(String collection, String json, int size) throws Exception;
+  /**
+   * 
+   * @param collection index name
+   * @param word autocomplete word
+   * @param size number of items to retrieve
+   * @return Set list of unique completion words
+   * @throws Exception thrown
+   */
+  Set<String> searchAutocomplete(String collection, String word, int size) throws Exception;
 
 }

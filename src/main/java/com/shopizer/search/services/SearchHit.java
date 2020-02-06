@@ -5,11 +5,9 @@ import java.util.Map;
 
 public class SearchHit {
 
-  // private org.elasticsearch.search.SearchHit searchit;
   private String id;
   private String index;
   private String internalId;
-  // private float score;
   private Map<String, Object> item = new HashMap<String, Object>();
 
 
@@ -17,16 +15,12 @@ public class SearchHit {
     return item;
   }
 
-  public SearchHit(Map<String, Object> item, String internalId) {
+  public SearchHit(Map<String, Object> item, String id, String internalId) {
 
-    this.id = (String) item.get("id");
+    this.id = id;
     this.internalId = internalId;
     this.item = item;
-    // metaEntries.put("source", item);
 
-    // if(searchit.getHighlightFields()!=null && searchit.getHighlightFields().size()>0) {
-    // metaEntries.put("highlightFields", searchit.getHighlightFields());
-    // }
 
   }
 

@@ -9,15 +9,26 @@ import java.util.Map;
 import javax.inject.Inject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import com.shopizer.search.services.SearchHit;
 import com.shopizer.search.services.SearchRequest;
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.impl.SearchDelegate;
+import com.shopizer.search.services.impl.SearchDelegateImpl;
 import com.shopizer.search.utils.CustomIndexConfiguration;
 import com.shopizer.search.utils.SearchClient;
 
 
 public class DeleteKeywordsImpl implements DeleteObjectWorker {
+  
+  
+  private static Logger log = Logger.getLogger(DeleteKeywordsImpl.class);
 
 
 
@@ -25,7 +36,7 @@ public class DeleteKeywordsImpl implements DeleteObjectWorker {
   @Inject
   private SearchDelegate searchDelegate;
 
-  public void deleteObject(SearchClient client, String collection, String object, String id,
+  public void deleteObject(SearchClient client, String collection, String id,
       ExecutionContext context) throws Exception {
 
     @SuppressWarnings("rawtypes")
@@ -60,8 +71,7 @@ public class DeleteKeywordsImpl implements DeleteObjectWorker {
             for (SearchHit hit : hits) {
               ids.add(hit.getInternalId());
             }
-            searchDelegate.bulkDeleteIndex(ids, indexConfiguration.getCollectionName(),
-                indexConfiguration.getIndexName());
+            searchDelegate.bulkDeleteIndex(ids, indexConfiguration.getCollectionName());
           }
 
         }
@@ -72,25 +82,45 @@ public class DeleteKeywordsImpl implements DeleteObjectWorker {
   }
 
 
-  public void deleteObject(SearchClient client, String collection, String object, String id)
+  public void deleteObject(SearchClient client, String collection, String id)
       throws Exception {
 
     if (searchDelegate.indexExist(collection)) {
 
-      String query = new StringBuilder().append("{\"query\":{\"term\" : {\"_id_\" : \"").append(id)
-          .append("\" }}}").toString();
+      //String query = new StringBuilder().append("{\"query\":{\"term\" : {\"_id_\" : \"").append(id)
+      //    .append("\" }}}").toString();
 
-      SearchRequest sr = new SearchRequest();
-      sr.addCollection(collection);
-      sr.setJson(query);
+      //SearchRequest sr = new SearchRequest();
+      //sr.addCollection(collection);
+      //sr.setJson(query);
 
 
-      SearchResponse r = searchDelegate.search(sr);
-      if (r != null) {
-        Collection<String> ids = r.getIds();
+      //SearchResponse r = searchDelegate.search(sr);
+      //if (r != null) {
+      //  Collection<String> ids = r.getIds();
 
-        searchDelegate.bulkDeleteIndex(ids, collection, object);
-      }
+      //  searchDelegate.bulkDeleteIndex(ids, collection);
+      //}
+      
+      ActionListener<BulkByScrollResponse> listener = new ActionListener<BulkByScrollResponse>() {
+        @Override
+        public void onResponse(BulkByScrollResponse deleteResponse) {}
+
+        @Override
+        public void onFailure(Exception e) {
+          log.error("An issue occured while deleting document from index " + collection + " " + e.getMessage());
+            
+        }
+      };
+      
+      
+      DeleteByQueryRequest request =
+          new DeleteByQueryRequest(collection);
+      
+      request.setQuery(new TermQueryBuilder("_id_", id)); 
+      client.getClient().deleteByQueryAsync(request, RequestOptions.DEFAULT, listener);
+      
+      
 
     }
 

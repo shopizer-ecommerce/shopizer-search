@@ -1,29 +1,29 @@
 package com.shopizer.search.utils;
 
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestClientFactory;
-import io.searchbox.client.config.HttpClientConfig;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.log4j.Logger;
-import org.elasticsearch.node.Node;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 
 /**
  * Singleton
  * 
  * @author Carl Samson
  * 
- *         Now using Jest elasticsearch client to query through http interface
- * 
- *         https://github.com/searchbox-io/Jest/tree/master/jest
+ *         Back to elasticsearch high level REST client
  *
  */
 public class SearchClient {
 
   private static Logger log = Logger.getLogger(SearchClient.class);
 
-  private JestClient client = null;
-  private Node node = null;
+  private RestHighLevelClient client = null;
   private boolean init = false;
   private ServerConfiguration serverConfiguration = null;
 
@@ -37,7 +37,7 @@ public class SearchClient {
     this.serverConfiguration = serverConfiguration;
   }
 
-  public JestClient getClient() {
+  public RestHighLevelClient getClient() {
     if (!init) {
       initClient();
     }
@@ -45,6 +45,7 @@ public class SearchClient {
   }
 
   public SearchClient() {}
+
 
   private synchronized void initClient() {
 
@@ -57,29 +58,31 @@ public class SearchClient {
         // proxy settings
         // security
 
-        StringBuilder host = new StringBuilder().append(getServerConfiguration().getClusterHost())
-            .append(":").append(getServerConfiguration().getClusterPort());
 
-        JestClientFactory factory = new JestClientFactory();
-        
-        HttpClientConfig.Builder httpConfigBuilder =  new HttpClientConfig
-            .Builder(host.toString()).multiThreaded(true);
-        
-        if(getServerConfiguration().getSecurityEnabled() != null && getServerConfiguration().getSecurityEnabled().booleanValue()) {
-          httpConfigBuilder.defaultCredentials(getServerConfiguration().getElasticSearchUser(), getServerConfiguration().getElasticSearchPassword());
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+            new UsernamePasswordCredentials(getServerConfiguration().getElasticSearchUser(),
+                getServerConfiguration().getElasticSearchPassword()));
+
+
+        RestClientBuilder builder =
+            RestClient.builder(new HttpHost(getServerConfiguration().getClusterHost(),
+                getServerConfiguration().getClusterPort()));
+
+        if (getServerConfiguration().getSecurityEnabled() != null
+            && getServerConfiguration().getSecurityEnabled().booleanValue()) {
+          builder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+            @Override
+            public HttpAsyncClientBuilder customizeHttpClient(
+                HttpAsyncClientBuilder httpClientBuilder) {
+              return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+            }
+          });
         }
-        
-        factory.setHttpClientConfig(httpConfigBuilder.build());
-        
-        client = factory.getObject();
 
-        if (!StringUtils.isBlank(getServerConfiguration().getProxyUser())
-            && !StringUtils.isBlank(getServerConfiguration().getProxyPassword())) {
-          setAuthenticationHeader("Basic " + new String(
-              Base64.encodeBase64(String.format("%s:%s", getServerConfiguration().getProxyUser(),
-                  getServerConfiguration().getProxyPassword()).getBytes())));
+        client = new RestHighLevelClient(builder);
 
-        }
+        this.init = true;
 
         log.debug("****** ES client ready ********");
 

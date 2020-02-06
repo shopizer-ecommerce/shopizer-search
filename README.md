@@ -1,15 +1,14 @@
-# shopizer-search - 2.5.0
+# shopizer-search - 2.10.0
 
-Search wrapper to Elastic Search used as a dependency to Shopizer
+Search wrapper - Elastic Search used as as search engine for Shopizer
 
-integrated in shopizer
+Supports Elastic Search 7.5 and up
 
-Supports Elastic Search < 7
-
-Tested with Elastic Search 6.3.X
-
-Uses the Jest API
+Tested with Elastic Search 7.5.2
 
 Login with XPack supported
 
-Copy src/test/resources/spring to Shopizer sm-core resources equivalent folder
+Unit tests (test cases) can be used for indexing and searching.
+Iny modifications to mapping and setting files must be copied from
+
+src/test/resources/spring to Shopizer sm-core/resources/search folder

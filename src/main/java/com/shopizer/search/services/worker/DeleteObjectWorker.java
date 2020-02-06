@@ -10,10 +10,10 @@ import com.shopizer.search.utils.SearchClient;
  */
 public interface DeleteObjectWorker {
 
-  public void deleteObject(SearchClient client, String collection, String object, String id,
+  public void deleteObject(SearchClient client, String collection, String id,
       ExecutionContext context) throws Exception;
 
-  void deleteObject(SearchClient client, String collection, String object, String id)
+  void deleteObject(SearchClient client, String collection, String id)
       throws Exception;
 
 }

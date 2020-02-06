@@ -12,10 +12,10 @@ public class GetWorkflow extends Workflow {
   @Inject
   private SearchDelegate searchDelegate;
 
-  public com.shopizer.search.services.GetResponse getObject(String collection, String object,
+  public com.shopizer.search.services.GetResponse getObject(String collection,
       String id) throws Exception {
 
-    return searchDelegate.getObject(collection, object, id);
+    return searchDelegate.getObject(collection, id);
 
   }
 

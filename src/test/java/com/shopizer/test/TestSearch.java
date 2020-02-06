@@ -9,10 +9,12 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.shopizer.search.services.SearchRequest;
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.SearchService;
+import org.junit.Assert;
+import org.junit.Ignore;
 
 /**
  * search api Elasticsearch < 6
@@ -34,7 +36,7 @@ import com.shopizer.search.services.SearchService;
 	DependencyInjectionTestExecutionListener.class,
 })
 
-
+@Ignore
 public class TestSearch {
 	
 	@Inject
@@ -43,53 +45,16 @@ public class TestSearch {
 	@Test
 	public void testSearch() throws Exception {
 
-		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*watch*\"}}}";
-
-		String query = q;
-		
-		System.out.println(query);
 
 		SearchRequest request = new SearchRequest();
-		request.addCollection("product_en_default");
-		request.setJson(query);
-		request.setSize(20);
+		request.setSize(-1);
 		request.setStart(0);
+		request.setIndex("product_en_default");
+		request.setMatch("thai pillow");
 
-		SearchResponse resp= searchService.search(request);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		String indexData = mapper.writeValueAsString(resp);
-		System.out.println(indexData);
-		
-		
-	}
-	
-	@Test
-	public void testSearchWithAggregations() throws Exception {
-		
+		SearchResponse resp = searchService.search(request);
 
-	    String aggregations = "\"aggs\" : { \"categories\" : { \"terms\" : {\"field\" : \"categories\"}}}";
-		
-		String q ="{\"query\":{\"query_string\":{\"fields\" : [\"name^5\", \"description\", \"tags\"], \"query\" : \"*watch*\"}}";
-
-		String query = q + "," + aggregations + "}";
-		//String query = q + "}";
-
-
-		SearchRequest request = new SearchRequest();
-		request.addCollection("product_en_default");
-		request.setJson(query);
-		request.setSize(20);
-		request.setStart(0);
-		
-		
-		System.out.println(query);
-
-		SearchResponse resp= searchService.search(request);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		String indexData = mapper.writeValueAsString(resp);
-		System.out.println(indexData);
+		Assert.assertNotNull(resp);
 		
 		
 	}

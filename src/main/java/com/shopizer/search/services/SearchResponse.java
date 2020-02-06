@@ -11,9 +11,10 @@ import java.util.Map;
  */
 public class SearchResponse {
 
+  @Deprecated
   private String inputSearchJson;
   private Collection<String> ids;
-  private int count;
+  private long count;
 
 
   private Collection<SearchHit> searchHits;
@@ -27,6 +28,7 @@ public class SearchResponse {
     this.facets = facets;
   }
 
+  @Deprecated
   private String[] inlineSearchList;
 
 
@@ -42,7 +44,7 @@ public class SearchResponse {
     return searchHits;
   }
 
-  public void setSearchHits(Collection searchHits) {
+  public void setSearchHits(Collection<SearchHit> searchHits) {
     this.searchHits = searchHits;
   }
 
@@ -62,11 +64,11 @@ public class SearchResponse {
     this.ids = ids;
   }
 
-  public int getCount() {
+  public long getCount() {
     return count;
   }
 
-  public void setCount(int count) {
+  public void setCount(long count) {
     this.count = count;
   }
 

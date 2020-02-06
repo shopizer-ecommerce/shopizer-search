@@ -10,12 +10,12 @@ public class DeleteObjectImpl implements DeleteObjectWorker {
   @Inject
   private SearchDelegate searchDelegate;
 
-  public void deleteObject(SearchClient client, String collection, String object, String id,
+  public void deleteObject(SearchClient client, String collection, String id,
       ExecutionContext context) throws Exception {
 
 
     // need to get the original entry
-    com.shopizer.search.services.GetResponse r = searchDelegate.getObject(collection, object, id);
+    com.shopizer.search.services.GetResponse r = searchDelegate.getObject(collection, id);
 
     if (r != null) {
 
@@ -66,12 +66,12 @@ public class DeleteObjectImpl implements DeleteObjectWorker {
     // }
 
     // SearchServiceImpl search = new SearchServiceImpl(client);
-    searchDelegate.delete(collection, object, id);
+    searchDelegate.delete(collection, id);
 
   }
 
 
-  public void deleteObject(SearchClient client, String collection, String object, String id)
+  public void deleteObject(SearchClient client, String collection, String id)
       throws Exception {
     throw new Exception("Not implemented");
 

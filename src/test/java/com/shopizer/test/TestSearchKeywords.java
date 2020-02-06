@@ -1,20 +1,15 @@
 package com.shopizer.test;
 
 import javax.inject.Inject;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopizer.search.services.SearchResponse;
 import com.shopizer.search.services.SearchService;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -42,7 +37,7 @@ import static org.junit.Assert.assertTrue;
 	DependencyInjectionTestExecutionListener.class,
 })
 
-
+@Ignore
 public class TestSearchKeywords {
 	
 	@Inject
@@ -52,19 +47,15 @@ public class TestSearchKeywords {
 	public void testSearchKeywords() throws Exception {
 		
 
-		//String json="{\"query\": {\"match\" : {\"keyword\" : {\"query\" : \"wa\",\"analyzer\" : \"standard\"}}}}";
-		//String json="{\"size\": 10,\"query\": {\"match\" : {\"keyword\" : \"wa\"}}}";
-		String json="{\"size\": 10,\"query\": {\"match\": {\"keyword\": {\"query\": \"wat\",\"operator\":\"and\"}}}}";
-
+		SearchResponse resp = searchService.searchAutoComplete("keyword_en_default","thai",10);
 		
-		System.out.println(json);
 
-		SearchResponse resp= searchService.searchAutoComplete("keyword_en_default",json,10);
+		String items[] = resp.getInlineSearchList();
 		
-		ObjectMapper mapper = new ObjectMapper();
-		String indexData = mapper.writeValueAsString(resp);
-		System.out.println(indexData);
-		System.out.println("It is 4 - " + resp.getCount());
+		for(int i = 0; i< items.length; i++) {
+		  System.out.println("Found keyword " + items[i]);
+		}
+
 
 		
 		

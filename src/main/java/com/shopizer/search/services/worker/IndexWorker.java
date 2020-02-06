@@ -6,7 +6,7 @@ public interface IndexWorker {
 
   public void init(SearchClient client);
 
-  public void execute(SearchClient client, String json, String collection, String object, String id,
+  public void execute(SearchClient client, String json, String collection, String id,
       ExecutionContext context) throws Exception;
 
 }

@@ -20,8 +20,9 @@
 		<!-- local (embedded version, will create new indexes in the working directory) or remote (requires existing server) -->
 		<property name="mode" value="remote"/>
 		<!-- those properties are used when configured for remote -->
-		<property name="clusterHost" value="http://localhost"/>
+		<property name="clusterHost" value="localhost"/>
 		<property name="clusterPort" value="9200"/>
+		<property name="protocole" value="http"/>
 		
 		<property name="proxyUser" value=""/>
 		<property name="proxyPassword" value=""/>
@@ -44,7 +45,7 @@
 		<property name="aggregationList">
 			<list>
 	    		<value>categories</value>
-	    		<value>manufacturers</value>
+	    		<value>manufacturer</value>
     		</list>
 		</property>
 	</bean>
@@ -153,10 +154,10 @@
 	
 	<bean id="keywordindex_en_defaultstore" class="com.shopizer.search.utils.CustomIndexConfiguration">
 		<property name="collectionName" value="keyword_en_default"/>
-		<property name="indexName" value="keyword_en"/>
-		<property name="createOnIndexName" value="product_en"/>
+		<property name="indexName" value="keyword_en"/><!-- TBR -->
+		<property name="createOnIndexName" value="product_en_*"/>
 		<property name="mappingFileName" value="spring/keyword_en.json"/>
-		<property name="settingsFileName" value="spring/settings_keyword.json"/>
+		<property name="settingsFileName" value="spring/settings_keyword_en.json"/>
 		<property name="fields">
 			<list>
 				<ref bean="field1" />
@@ -174,10 +175,11 @@
 
 
 	<bean id="keywordindex_fr_defaultstore" class="com.shopizer.search.utils.CustomIndexConfiguration">
-		<property name="indexName" value="keyword_fr"/>
-		<property name="createOnIndexName" value="product_fr"/>
+		<property name="collectionName" value="keyword_fr_default"/>
+		<property name="indexName" value="keyword_fr"/><!-- TBR -->
+		<property name="createOnIndexName" value="product_fr_*"/><!-- TBD -->
 		<property name="mappingFileName" value="spring/keyword_fr.json"/>
-		<property name="settingsFileName" value="spring/settings_keyword.json"/>
+		<property name="settingsFileName" value="spring/settings_keyword_fr.json"/>
 		<property name="fields">
 			<list>
 				<ref bean="field1" />

@@ -1,12 +1,14 @@
 package com.shopizer.search.services.worker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import com.shopizer.search.services.IndexKeywordRequest;
@@ -105,8 +107,7 @@ public class KeywordIndexerImpl implements IndexWorker {
 
                 if (ic.getCollectionName() != null
                     && !searchDelegate.indexExist(ic.getCollectionName())) {
-                  searchDelegate.createIndice(metadata, settingsdata, ic.getCollectionName(),
-                      ic.getIndexName());
+                  searchDelegate.createIndice(metadata, settingsdata, ic.getCollectionName());
                 }
               }
 
@@ -134,8 +135,8 @@ public class KeywordIndexerImpl implements IndexWorker {
 
   }
 
-  @SuppressWarnings("rawtypes")
-  public void execute(SearchClient client, String json, String collection, String object, String id,
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  public void execute(SearchClient client, String json, String collection, String id,
       ExecutionContext context) throws Exception {
 
     if (!init) {
@@ -143,36 +144,28 @@ public class KeywordIndexerImpl implements IndexWorker {
     }
 
     try {
+      
+      //strip last _ of collection
+      int indexOf = collection.lastIndexOf("_");
+      String indexName = collection.substring(0, indexOf);
+      indexName = indexName + "_*";
 
 
-      if (indexConfigurationsMap != null && indexConfigurationsMap.containsKey(object)) {
+      if (indexConfigurationsMap != null && indexConfigurationsMap.containsKey(indexName)) {
 
 
         // get json
         Map indexData = (Map) context.getObject("indexData");
 
 
-        CustomIndexConfiguration conf = indexConfigurationsMap.get(object);
-
-
-        /*
-         * String collectionName =
-         * DynamicIndexNameUtil.getIndexName(conf.getCollectionName(),indexData); StringTokenizer t
-         * = new StringTokenizer(conf.getCollectionName(),"_"); int countToken = t.countTokens();
-         * if(countToken>1) {
-         * 
-         * StringBuilder iName = new StringBuilder(); int count = 1; while(t.hasMoreTokens()) {
-         * 
-         * String elem = t.nextToken();
-         * iName.append(DynamicIndexNameUtil.getIndexName(elem,indexData)); if(count<countToken) {
-         * iName.append("_"); } count++; } collectionName = iName.toString(); }
-         */
+        CustomIndexConfiguration conf = indexConfigurationsMap.get(indexName);
 
         // get fields to index
         List fields = conf.getFields();
         if (fields != null) {
 
-          List k = null;
+          //list of keyword - original
+          List<Keyword> k = new ArrayList<Keyword>();
           for (Object o : fields) {
 
 
@@ -180,7 +173,7 @@ public class KeywordIndexerImpl implements IndexWorker {
 
             String fieldName = cifc.getFieldName();
 
-            if (fieldName.trim().toLowerCase().equals("id")) {// we have our own id
+            if (fieldName.trim().toLowerCase().equals("_id_")) {// we have our own id
               continue;
             }
 
@@ -190,27 +183,27 @@ public class KeywordIndexerImpl implements IndexWorker {
 
             if (!StringUtils.isBlank(fieldType)) {
               if (fieldType.equals("List")) {
-
                 try {
-                  List keyWords = (List) indexData.get(fieldName);
-
+                  List<String> keyWords = (List) indexData.get(fieldName);
                   if (keyWords != null) {
 
-                    if (k == null) {
-                      k = new ArrayList();
+                    //k.addAll(keyWords);
+                    for(String keyword : keyWords) {
+                      Keyword word = new Keyword();
+                      word.setKeyword(keyword);
+                      word.setOriginal(keyword);
+                      k.add(word);
                     }
-                    k.addAll(keyWords);
                   }
 
                 } catch (Exception e) {// might have one instead of a list
                   String keyword = (String) indexData.get(fieldName);
 
                   if (keyword != null) {
-
-                    if (k == null) {
-                      k = new ArrayList();
-                    }
-                    k.add(keyword);
+                    Keyword word = new Keyword();
+                    word.setKeyword(keyword);
+                    word.setOriginal(keyword);
+                    k.add(word);
 
                   }
                 }
@@ -218,14 +211,21 @@ public class KeywordIndexerImpl implements IndexWorker {
               } else {// String
 
                 String keyword = (String) indexData.get(fieldName);
+                
+                
+                String[] splitted = keyword.split(" ");
 
                 if (keyword != null) {
 
                   if (k == null) {
                     k = new ArrayList();
                   }
-                  k.add(keyword);
-
+                  for(int i = 0; i< splitted.length; i++) {
+                    Keyword word = new Keyword();
+                    word.setKeyword(splitted[i]);
+                    word.setOriginal(keyword);
+                    k.add(word);
+                  }
                 }
               }
             } // end field type
@@ -233,30 +233,27 @@ public class KeywordIndexerImpl implements IndexWorker {
           } // end for
 
 
-          if (k != null) {
+          if (!CollectionUtils.isEmpty(k)) {
 
             Collection bulks = new ArrayList();
 
-            StringBuilder kw = new StringBuilder();
-            int i = 1;
-            for (Object o : k) {
+            for (Keyword o : k) {
 
 
               IndexKeywordRequest kr = new IndexKeywordRequest();
 
               // id is the key trimed in lower case
-              String value = (String) o;
+              String value = o.getKeyword();
+              String original = o.getOriginal();
 
               if (StringUtils.isBlank(value)) {
                 continue;
               }
 
-              // kr.setId(value.toLowerCase().trim());
-              // get id from original object
-
               String _id = (String) indexData.get("id");
               kr.setId(_id);
-              kr.setKey(value);
+              kr.setOriginal(original);
+              kr.setKeyword(value.toLowerCase().trim());
 
               // check fields to add
 
@@ -265,11 +262,8 @@ public class KeywordIndexerImpl implements IndexWorker {
                 for (Object oo : conf.getFilters()) {
 
                   CustomIndexFieldConfiguration filter = (CustomIndexFieldConfiguration) oo;
-
                   String fieldName = filter.getFieldName();
-
                   String fieldType = filter.getFieldType();
-
                   Field f = null;
 
                   if (fieldType.equals("List")) {
@@ -341,10 +335,7 @@ public class KeywordIndexerImpl implements IndexWorker {
                   }
                 }
 
-
               }
-
-
 
               bulks.add(kr);
 
@@ -352,20 +343,15 @@ public class KeywordIndexerImpl implements IndexWorker {
 
 
             // delete previous keywords for the same id
-            // deleteKeywordsImpl.deleteObject(client, collectionName, id);
-            deleteKeywordsImpl.deleteObject(client, conf.getCollectionName(), conf.getIndexName(),
+            deleteKeywordsImpl.deleteObject(client, conf.getCollectionName(),
                 id);
 
             // searchDelegate.bulkIndexKeywords(bulks, collectionName, "keyword");
-            searchDelegate.bulkIndexKeywords(bulks, conf.getCollectionName(), conf.getIndexName());
+            searchDelegate.bulkIndexKeywords(bulks, conf.getCollectionName());
 
           }
 
-
-
         }
-
-
 
       }
 
@@ -373,84 +359,6 @@ public class KeywordIndexerImpl implements IndexWorker {
       log.error("Cannot index keywords, maybe a timing ussue for no shards available", e);
     }
 
-
-
-    /*
-     * if(!StringUtils.isBlank(collectionName) && keyWordsToIndex!=null && keyWordsToIndex.size()>0)
-     * {
-     * 
-     * SearchServiceImpl service = new SearchServiceImpl();
-     * 
-     * 
-     * ObjectMapper mapper = new ObjectMapper(); Map<String,Object> indexData =
-     * mapper.readValue(json, Map.class);
-     * 
-     * 
-     * List k = null;
-     * 
-     * String indexName = getIndexName(collectionName,indexData); //tokenize ? StringTokenizer t =
-     * new StringTokenizer(collectionName,"_"); if(t.countTokens()>1) {
-     * 
-     * StringBuilder iName = new StringBuilder(); int count = 1; while(t.hasMoreTokens()) {
-     * 
-     * 
-     * String elem = t.nextToken(); iName.append(getIndexName(elem,indexData));
-     * if(count<t.countTokens()) { iName.append("_"); } }
-     * 
-     * indexName = iName.toString();
-     * 
-     * }
-     * 
-     * 
-     * for(Object o : keyWordsToIndex.keySet()) {
-     * 
-     * String fieldName = (String)o;
-     * 
-     * 
-     * if(fieldName.trim().toLowerCase().equals("id")) {//we have our own id continue; }
-     * 
-     * 
-     * 
-     * String fieldType = (String)keyWordsToIndex.get(fieldName);
-     * if(!StringUtils.isBlank(fieldType)) { if(fieldType.equals("List")) {
-     * 
-     * try { List keyWords = (List)indexData.get(fieldName);
-     * 
-     * if(keyWords!=null) {
-     * 
-     * if(k==null) { k = new ArrayList(); } k.addAll(keyWords);
-     * 
-     * }
-     * 
-     * } catch (Exception e) {//might have one instead of a list String keyword =
-     * (String)indexData.get(fieldName);
-     * 
-     * if(keyword!=null) {
-     * 
-     * if(k==null) { k = new ArrayList(); } k.add(keyword);
-     * 
-     * } }
-     * 
-     * } else {//String
-     * 
-     * String keyword = (String)indexData.get(fieldName);
-     * 
-     * if(keyword!=null) {
-     * 
-     * if(k==null) { k = new ArrayList(); } k.add(keyword);
-     * 
-     * }
-     * 
-     * }
-     * 
-     * } }//end for
-     */
-
-
-
-    // }
-
-    // }
 
 
   }
@@ -463,6 +371,25 @@ public class KeywordIndexerImpl implements IndexWorker {
 
   }
 
+
+
+}
+
+class Keyword {
+  private String keyword;
+  private String original;
+  public String getKeyword() {
+    return keyword;
+  }
+  public void setKeyword(String keyword) {
+    this.keyword = keyword;
+  }
+  public String getOriginal() {
+    return original;
+  }
+  public void setOriginal(String original) {
+    this.original = original;
+  }
 
 
 }

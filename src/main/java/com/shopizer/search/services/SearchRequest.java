@@ -5,7 +5,10 @@ import java.util.List;
 
 public class SearchRequest {
 
-  private List<String> collections;
+  @Deprecated()
+  private List<String> collections = new ArrayList<String>();
+  private String index;
+  private String match;
 
   public List<String> getCollections() {
     return collections;
@@ -27,12 +30,18 @@ public class SearchRequest {
     this.size = size;
   }
 
+  
+  @Deprecated
+  /**
+   * Set match string
+   */
   private String json;
 
   public String getJson() {
     return json;
   }
 
+  @Deprecated()
   public void setJson(String json) {
     this.json = json;
   }
@@ -46,6 +55,22 @@ public class SearchRequest {
 
   public void setStart(int start) {
     this.start = start;
+  }
+
+  public String getIndex() {
+    return index;
+  }
+
+  public void setIndex(String index) {
+    this.index = index;
+  }
+
+  public String getMatch() {
+    return match;
+  }
+
+  public void setMatch(String match) {
+    this.match = match;
   }
 
 }

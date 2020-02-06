@@ -1,7 +1,7 @@
 package com.shopizer.test;
 
 import javax.inject.Inject;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -38,9 +38,8 @@ import com.shopizer.search.services.SearchService;
  * Faceted and filtered search
  * https://medium.com/hepsiburadatech/how-to-create-faceted-filtered-search-with-elasticsearch-75e2fc9a1ae3
  * 
- * @author carlsamson
- *
  */
+@Ignore
 public class TestIndex {
 	
 	@Inject
@@ -49,13 +48,13 @@ public class TestIndex {
 	@Test
 	public void testIndex() throws Exception {
 		
-		String jsonData = "{\"id\":\"2\",\"name\":\"Citizen tech model silver watch\",\"price\":\"453.99\",\"categories\":[\"Men watches\"],\"store\":\"default\",\"description\":\"Silver watch 2012 model\", \"tags\":[\"Silver watch\",\"Liquidation\"]}";
-		String jsonData2 = "{\"id\":\"3\",\"name\":\"Tag Heur black watch\",\"price\":\"1483.99\",\"categories\":[\"Sport watches\"],\"store\":\"default\",\"description\":\"Black watch 2012 model\", \"tags\":[\"Black watch\",\"Liquidation\"]}";
+		String jsonData = "{\"id\":\"100\",\"name\":\"Thai cussion from asia\",\"price\":\"14.99\",\"categories\":[\"Imports\"],\"store\":\"default\",\"description\":\"Import from thailand\", \"tags\":[\"cotton \",\"liquidation\"], \"manufacturer\":\"mnufacture12\"}";
+		String jsonData2 = "{\"id\":\"200\",\"name\":\"Asian pillow\",\"price\":\"24.99\",\"categories\":[\"Imports\"],\"store\":\"default\",\"description\":\"Import from asia\", \"tags\":[\"cotton \",\"pillow\"], \"manufacturer\":\"mnufacturer2\"}";
+
+		searchService.index(jsonData2, "product_en_default");//as of es 7.5 3rd type is no more required
+		searchService.index(jsonData, "product_en_default");
 		
-		searchService.index(jsonData, "product_en_default", "product_en");
-		searchService.index(jsonData2, "product_en_default", "product_en");
-		
-		System.out.println("Done !");
+		System.out.println("Index done !");
 		
 	}
 

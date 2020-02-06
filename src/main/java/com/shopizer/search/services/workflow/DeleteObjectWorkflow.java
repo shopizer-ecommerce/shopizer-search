@@ -25,14 +25,14 @@ public class DeleteObjectWorkflow extends Workflow {
   }
 
 
-  public void deleteObject(String collection, String object, String id) throws Exception {
+  public void deleteObject(String collection, String id) throws Exception {
 
 
     if (deleteObjectWorkflow != null) {
       ExecutionContext context = new ExecutionContext();
       for (Object o : deleteObjectWorkflow) {
         DeleteObjectWorker iw = (DeleteObjectWorker) o;
-        iw.deleteObject(super.getSearchClient(), collection, object, id, context);
+        iw.deleteObject(super.getSearchClient(), collection,  id, context);
       }
     }
   }

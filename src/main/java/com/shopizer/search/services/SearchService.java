@@ -58,41 +58,62 @@ public class SearchService {
 
 
 
-  public void deleteObject(String collection, String object, String id) throws Exception {
-    deleteWorkflow.deleteObject(collection, object, id);
+  /**
+   * 
+   * @param index name of index
+   * @param id of object to delete
+   * @throws Exception thrown
+   */
+  public void deleteObject(String index, String id) throws Exception {
+    deleteWorkflow.deleteObject(index, id);
 
   }
 
 
-  public com.shopizer.search.services.GetResponse getObject(String collection, String object,
-      String id) throws Exception {
+  /**
+   * 
+   * @param index name of index
+   * @param id of object
+   * @return GetResponse
+   * @throws Exception thrown
+   */
+  public com.shopizer.search.services.GetResponse getObject(String index, String id) throws Exception {
 
-    return getWorkflow.getObject(collection, object, id);
+    return getWorkflow.getObject(index, id);
   }
 
   /**
-   * Index a document
    * 
-   * @param json - input string
-   * @param collection (name of the collection) Might be product_en or product_fr or any name of the
-   *        index container
-   * @param object to index that corresponds to the name of the entity to be indexed as defined in
-   *        the indice file (product.json). In this case it will be product
-   * @throws Exception indexing fails
+   * @param json this is product to index
+   * @param index name of index
+   * @throws Exception thrown
    */
+  public void index(String json, String index) throws Exception {
 
-  public void index(String json, String collection, String object) throws Exception {
-
-    indexWorkflow.index(json, collection, object);
+    indexWorkflow.index(json, index);
   }
 
 
-  public SearchResponse searchAutoComplete(String collection, String json, int size)
+  /**
+   * 
+   * @param index name of index
+   * @param word to search for autocompletion
+   * @param size number of suggestions
+   * @return SearchResponse
+   * @throws Exception thrown
+   */
+  public SearchResponse searchAutoComplete(String index, String word, int size)
       throws Exception {
 
-    return searchWorkflow.searchAutocomplete(collection, json, size);
+    return searchWorkflow.searchAutocomplete(index, word, size);
   }
 
+  /**
+   * 
+   * @param request search request
+   * @return SearchResponse
+   * @throws Exception thrown
+   */
   public SearchResponse search(SearchRequest request) throws Exception {
 
     return searchWorkflow.search(request);

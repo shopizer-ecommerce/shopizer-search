@@ -1,0 +1,9 @@
+{
+        "properties": {
+            "keyword": {
+                "type":     "text",
+            	"analyzer": "nGram_analyzer",
+            	"search_analyzer": "whitespace_analyzer"
+            }
+        }
+}

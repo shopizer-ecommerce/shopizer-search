@@ -2,6 +2,7 @@ package com.shopizer.test;
 
 import java.util.Map;
 import javax.inject.Inject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -28,6 +29,7 @@ import com.shopizer.search.services.SearchService;
  * @author carlsamson
  *
  */
+@Ignore
 public class TestGet {
 	
 	@Inject
@@ -37,7 +39,7 @@ public class TestGet {
 	public void testGet() throws Exception {
 		
 		/** requires to index at least a product first **/
-		GetResponse response = searchService.getObject("product_en_default", "product_en", "2");
+		GetResponse response = searchService.getObject("product_en_default", "2");
 
 		
 		Map<String, Object> fieldMap = response.getFieldMap();

@@ -14,8 +14,8 @@ public class IndexKeywordRequest implements Serializable {
    */
   private static final long serialVersionUID = 1L;
   private String id;
-  // private Locale locale;
-  private String key;
+  private String keyword;
+  private String original;
   private Collection<Field> filters = new ArrayList<Field>();
 
 
@@ -36,16 +36,20 @@ public class IndexKeywordRequest implements Serializable {
     this.id = id;
   }
 
-  /*
-   * public Locale getLocale() { return locale; } public void setLocale(Locale locale) { this.locale
-   * = locale; }
-   */
-  public String getKey() {
-    return key;
+  public String getKeyword() {
+    return keyword;
   }
 
-  public void setKey(String key) {
-    this.key = key;
+  public void setKeyword(String keyword) {
+    this.keyword = keyword;
+  }
+
+  public String getOriginal() {
+    return original;
+  }
+
+  public void setOriginal(String original) {
+    this.original = original;
   }
 
 

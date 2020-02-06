@@ -11,6 +11,7 @@ public class IndexConfiguration {
   private String collectionName;
   private String mappingFileName;
   private String settingsFileName;
+  private String indexName;
 
   public String getMappingFileName() {
     return mappingFileName;
@@ -44,7 +45,7 @@ public class IndexConfiguration {
     return settingsFileName;
   }
 
-  private String indexName;
+
 
 
 }

@@ -72,8 +72,7 @@ public class ObjectIndexerImpl implements IndexWorker {
             if (!StringUtils.isBlank(config.getIndexName())) {
 
               if (!searchDelegate.indexExist(config.getCollectionName())) {
-                searchDelegate.createIndice(metadata, settingsdata, config.getCollectionName(),
-                    config.getIndexName());
+                searchDelegate.createIndice(metadata, settingsdata, config.getCollectionName());
               }
             }
 
@@ -91,7 +90,7 @@ public class ObjectIndexerImpl implements IndexWorker {
   }
 
   @SuppressWarnings({"unchecked", "unused"})
-  public void execute(SearchClient client, String json, String collection, String object, String id,
+  public void execute(SearchClient client, String json, String collection, String id,
       ExecutionContext context) throws Exception {
 
     try {
@@ -114,12 +113,12 @@ public class ObjectIndexerImpl implements IndexWorker {
 
       context.setObject("indexData", indexData);
 
-      com.shopizer.search.services.GetResponse r = searchDelegate.getObject(collection, object, id);
+      com.shopizer.search.services.GetResponse r = searchDelegate.getObject(collection, id);
       if (r != null) {
-        searchDelegate.delete(collection, object, id);
+        searchDelegate.delete(collection, id);
       }
 
-      searchDelegate.index(json, collection, object, id);
+      searchDelegate.index(json, collection, id);
 
     } catch (Exception e) {
       log.error("Exception while indexing a product, maybe a timing ussue for no shards available",

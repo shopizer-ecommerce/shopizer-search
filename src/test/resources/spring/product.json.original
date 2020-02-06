@@ -1,0 +1,24 @@
+{
+	"product_en": {
+		"properties": {
+			"name": {
+				"type": "text"
+			},
+			"categories": {
+				"type": "keyword"
+			},
+			"manufacturer": {
+				"type": "keyword"
+			},
+			"description": {
+				"type": "text"
+			},
+			"tags": {
+				"type": "keyword"
+			},
+			"price": {
+				"type": "float"
+			}
+		}
+	}
+}

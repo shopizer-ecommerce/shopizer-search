@@ -28,7 +28,7 @@ public class SearchWorkflow extends Workflow {
 
 
 
-  public SearchResponse searchAutocomplete(String collection, String json, int size)
+  public SearchResponse searchAutocomplete(String collection, String word, int size)
       throws Exception {
 
 
@@ -42,7 +42,7 @@ public class SearchWorkflow extends Workflow {
         // SearchWorker search = (SearchWorker)Class.forName(className).newInstance();
         // search.execute(request.getJson(), request.getCollection());
         KeywordSearchWorker sw = (KeywordSearchWorker) o;
-        response = sw.execute(super.getSearchClient(), collection, json, size, null);
+        response = sw.execute(super.getSearchClient(), collection, word, size, null);
       }
     }
 

@@ -29,7 +29,7 @@ public class IndexWorkflow extends Workflow {
   }
 
   @SuppressWarnings("unchecked")
-  public void index(String json, String collection, String object) throws Exception {
+  public void index(String json, String collection) throws Exception {
 
     ObjectMapper mapper = new ObjectMapper();
     Map<String, Object> indexData = mapper.readValue(json, Map.class);
@@ -49,7 +49,7 @@ public class IndexWorkflow extends Workflow {
     if (indexWorkflow != null) {
       for (Object o : indexWorkflow) {
         IndexWorker iw = (IndexWorker) o;
-        iw.execute(this.getSearchClient(), json, collection, object, _id, context);
+        iw.execute(this.getSearchClient(), json, collection, _id, context);
       }
     }
   }
