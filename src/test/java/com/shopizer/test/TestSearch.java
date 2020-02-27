@@ -50,7 +50,7 @@ public class TestSearch {
 		request.setSize(-1);
 		request.setStart(0);
 		request.setIndex("product_en_default");
-		request.setMatch("thai pillow");
+		request.setMatch("shelf");
 
 		SearchResponse resp = searchService.search(request);
 

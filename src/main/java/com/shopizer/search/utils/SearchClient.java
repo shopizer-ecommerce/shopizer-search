@@ -63,11 +63,15 @@ public class SearchClient {
         credentialsProvider.setCredentials(AuthScope.ANY,
             new UsernamePasswordCredentials(getServerConfiguration().getElasticSearchUser(),
                 getServerConfiguration().getElasticSearchPassword()));
+        
+        String clusterHost = getServerConfiguration().getClusterHost();
+        int clusterPort = getServerConfiguration().getClusterPort();
+        
+        log.debug("Elastic search client connecting to " + clusterHost + ":" + clusterPort);
 
 
         RestClientBuilder builder =
-            RestClient.builder(new HttpHost(getServerConfiguration().getClusterHost(),
-                getServerConfiguration().getClusterPort()));
+            RestClient.builder(new HttpHost(clusterHost,clusterPort));
 
         if (getServerConfiguration().getSecurityEnabled() != null
             && getServerConfiguration().getSecurityEnabled().booleanValue()) {

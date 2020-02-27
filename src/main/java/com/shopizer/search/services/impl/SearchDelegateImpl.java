@@ -386,15 +386,13 @@ public static List<Object> toList(JsonArray array) throws Exception {
    * java.lang.String, java.lang.String)
    */
   @Override
-  public com.shopizer.search.services.GetResponse getObject(String collection, String id) throws Exception {
-    
-
+  public com.shopizer.search.services.GetResponse getObject(String index, String id) throws Exception {
 
     RestHighLevelClient client = searchClient.getClient();
     
     
     GetRequest getRequest = new GetRequest(
-        collection, 
+        index, 
         id); 
     
     GetResponse getResponse = client.get(getRequest, RequestOptions.DEFAULT);
@@ -414,7 +412,7 @@ public static List<Object> toList(JsonArray array) throws Exception {
       
     } else {
 
-      log.error("Object not found on collection " + collection + " fro id " +id );
+      log.error("Object not found on collection " + index + " from id " +id );
       return null;
       
     }
