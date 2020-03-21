@@ -66,12 +66,13 @@ public class SearchClient {
         
         String clusterHost = getServerConfiguration().getClusterHost();
         int clusterPort = getServerConfiguration().getClusterPort();
+        String protocole = getServerConfiguration().getProtocole();
         
-        log.debug("Elastic search client connecting to " + clusterHost + ":" + clusterPort);
+        log.debug("Elastic search client connecting to "+ protocole + "://" + clusterHost + ":" + clusterPort);
 
 
         RestClientBuilder builder =
-            RestClient.builder(new HttpHost(clusterHost,clusterPort));
+            RestClient.builder(new HttpHost(clusterHost,clusterPort,protocole));
 
         if (getServerConfiguration().getSecurityEnabled() != null
             && getServerConfiguration().getSecurityEnabled().booleanValue()) {

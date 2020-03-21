@@ -52,6 +52,10 @@ public class TestSearchKeywords {
 
 		String items[] = resp.getInlineSearchList();
 		
+		if(items.length == 0) {
+		  System.out.println("Found no keywords ");
+		}
+		
 		for(int i = 0; i< items.length; i++) {
 		  System.out.println("Found keyword " + items[i]);
 		}

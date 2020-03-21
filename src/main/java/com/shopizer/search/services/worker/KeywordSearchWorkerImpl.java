@@ -29,7 +29,6 @@ public class KeywordSearchWorkerImpl implements KeywordSearchWorker {
       if (array.length > 0) {
         resp.setCount(array.length);
       }
-
     }
 
     return resp;

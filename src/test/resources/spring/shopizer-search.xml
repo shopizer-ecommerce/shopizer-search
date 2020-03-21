@@ -16,13 +16,13 @@
 	
 	<!-- Server configuration -->
 	<bean id="serverConfiguration" class="com.shopizer.search.utils.ServerConfiguration">
-		<property name="clusterName" value="shopizer"/>
+		<property name="clusterName" value="${elasticsearch.cluster.name}"/>
 		<!-- local (embedded version, will create new indexes in the working directory) or remote (requires existing server) -->
 		<property name="mode" value="remote"/>
 		<!-- those properties are used when configured for remote -->
-		<property name="clusterHost" value="localhost"/>
-		<property name="clusterPort" value="9200"/>
-		<property name="protocole" value="http"/>
+		<property name="clusterHost" value="${elasticsearch.server.host}"/>
+		<property name="clusterPort" value="${elasticsearch.server.port}"/>
+		<property name="protocole" value="${elasticsearch.server.protocole}"/>
 		
 		<property name="proxyUser" value=""/>
 		<property name="proxyPassword" value=""/>
@@ -32,9 +32,9 @@
 			 So in order to perform requests, enable security here
 			 Default credentials are elastic - changeme
 		 -->
-		<property name="securityEnabled" value="true"/>
-		<property name="elasticSearchUser" value="elastic"/>
-		<property name="elasticSearchPassword" value="changeme"/>
+		<property name="securityEnabled" value="${elasticsearch.security.enabled}"/>
+		<property name="elasticSearchUser" value="${elasticsearch.security.user}"/>
+		<property name="elasticSearchPassword" value="${elasticsearch.security.password}"/>
 	</bean>
 
 	
@@ -109,8 +109,9 @@
 	<bean id="deleteKeywords" class="com.shopizer.search.services.worker.DeleteKeywordsImpl">
 		<property name="indexConfigurations">
 			<list>
-				<ref bean="keywordindex_en_defaultstore" />
-				<ref bean="keywordindex_fr_defaultstore" />
+				<!-- rename -->
+				<ref bean="keywordindex_en" />
+				<ref bean="keywordindex_fr" />
 			</list>
 		</property>
 	</bean>
@@ -118,8 +119,9 @@
 	<bean id="index" class="com.shopizer.search.services.worker.ObjectIndexerImpl">
 		<property name="indexConfigurations">
 			<list>
-				<ref bean="productindex_en_defaultstore" />
-				<ref bean="productindex_fr_defaultstore" />
+				<!-- rename -->
+				<ref bean="productindex_en" />
+				<ref bean="productindex_fr" />
 			</list>
 		</property>
 	</bean>
@@ -127,16 +129,20 @@
 
 	
 	<!-- The presence of those properties will allow the creation of mapping files -->
-	<bean id="productindex_en_defaultstore" class="com.shopizer.search.utils.IndexConfiguration">
-		<property name="collectionName" value="product_en_default"/>
+	<!-- product_en -->
+	<bean id="productindex_en" class="com.shopizer.search.utils.IndexConfiguration">
+		<!-- remove -->
+		<property name="collectionName" value="product_en"/>
 		<property name="indexName" value="product_en"/>
 		<property name="mappingFileName" value="spring/product.json"/>
 		<!-- not necessary, only to define index and search rules -->
 		<property name="settingsFileName" value="spring/settings_product.json"/>
 	</bean>
 	
-	<bean id="productindex_fr_defaultstore" class="com.shopizer.search.utils.IndexConfiguration">
-		<property name="collectionName" value="product_fr_default"/>
+	<!-- product_fr -->
+	<bean id="productindex_fr" class="com.shopizer.search.utils.IndexConfiguration">
+		<!-- remove -->
+		<property name="collectionName" value="product_fr"/>
 		<property name="indexName" value="product_fr"/>
 		<property name="mappingFileName" value="spring/product_fr.json"/>
 		<!-- not necessary, only to define index and search rules -->
@@ -146,14 +152,17 @@
 	<bean id="keyword" class="com.shopizer.search.services.worker.KeywordIndexerImpl">
 		<property name="indexConfigurations">
 			<list>
-				<ref bean="keywordindex_en_defaultstore" />
-				<ref bean="keywordindex_fr_defaultstore" />
+				<!-- rename -->
+				<ref bean="keywordindex_en" />
+				<ref bean="keywordindex_fr" />
 			</list>
 		</property>
 	</bean>
 	
-	<bean id="keywordindex_en_defaultstore" class="com.shopizer.search.utils.CustomIndexConfiguration">
-		<property name="collectionName" value="keyword_en_default"/>
+	<!--  keywordindex_en_-->
+	<bean id="keywordindex_en" class="com.shopizer.search.utils.CustomIndexConfiguration">
+		<!-- rename or remove -->
+		<property name="collectionName" value="keyword_en"/>
 		<property name="indexName" value="keyword_en"/><!-- TBR -->
 		<property name="createOnIndexName" value="product_en_*"/>
 		<property name="mappingFileName" value="spring/keyword_en.json"/>
@@ -164,18 +173,12 @@
 				<ref bean="field2" />
 			</list>
 		</property>
-		<!-- NO FILTERS
-		<property name="filters">
-			<list>
-				<ref bean="filter1" />
-			</list>
-		</property>
-		 -->
 	</bean>
 
-
-	<bean id="keywordindex_fr_defaultstore" class="com.shopizer.search.utils.CustomIndexConfiguration">
-		<property name="collectionName" value="keyword_fr_default"/>
+	<!--  keywordindex_fr_-->
+	<bean id="keywordindex_fr" class="com.shopizer.search.utils.CustomIndexConfiguration">
+		<!-- rename or remove -->
+		<property name="collectionName" value="keyword_fr"/>
 		<property name="indexName" value="keyword_fr"/><!-- TBR -->
 		<property name="createOnIndexName" value="product_fr_*"/><!-- TBD -->
 		<property name="mappingFileName" value="spring/keyword_fr.json"/>
@@ -186,13 +189,6 @@
 				<ref bean="field2" />
 			</list>
 		</property>
-		<!-- NO FILTERS
-		<property name="filters">
-			<list>
-				<ref bean="filter1" />
-			</list>
-		</property>
-		 -->
 	</bean>	
 	
 	

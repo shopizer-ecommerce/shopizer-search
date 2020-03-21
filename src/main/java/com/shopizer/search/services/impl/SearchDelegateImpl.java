@@ -127,46 +127,46 @@ public class SearchDelegateImpl implements SearchDelegate {
     Map<String, Object> map = new HashMap<String, Object>();
 
     Set<String> keys = object.keySet();
-    for(String key : keys) {
-        Object value = object.get(key);
+    for (String key : keys) {
+      Object value = object.get(key);
 
-        if(value instanceof JsonArray) {
-            value = toList((JsonArray) value);
-        }
+      if (value instanceof JsonArray) {
+        value = toList((JsonArray) value);
+      }
 
-        else if(value instanceof JsonObject) {
-            value = toMap((JsonObject) value);
-        }
-        
-        else if(value instanceof JsonPrimitive) {
-          value = ((JsonPrimitive) value).getAsString();
-        }
-        
+      else if (value instanceof JsonObject) {
+        value = toMap((JsonObject) value);
+      }
+
+      else if (value instanceof JsonPrimitive) {
+        value = ((JsonPrimitive) value).getAsString();
+      }
+
       map.put(key, value);
     }
     return map;
-}
+  }
 
-public static List<Object> toList(JsonArray array) throws Exception {
+  public static List<Object> toList(JsonArray array) throws Exception {
     List<Object> list = new ArrayList<Object>();
-    for(int i = 0; i < array.size(); i++) {
-        Object value = array.get(i);
-        if(value instanceof JsonArray) {
-            value = toList((JsonArray) value);
-        }
+    for (int i = 0; i < array.size(); i++) {
+      Object value = array.get(i);
+      if (value instanceof JsonArray) {
+        value = toList((JsonArray) value);
+      }
 
-        else if(value instanceof JsonObject) {
-            value = toMap((JsonObject) value);
-        }
-        
-        else if(value instanceof JsonPrimitive) {
-          value = ((JsonPrimitive) value).getAsString();
-        }
-        
-        list.add(value);
+      else if (value instanceof JsonObject) {
+        value = toMap((JsonObject) value);
+      }
+
+      else if (value instanceof JsonPrimitive) {
+        value = ((JsonPrimitive) value).getAsString();
+      }
+
+      list.add(value);
     }
     return list;
-}
+  }
 
 
 
@@ -181,7 +181,7 @@ public static List<Object> toList(JsonArray array) throws Exception {
 
 
 
-    GetIndexRequest request = new GetIndexRequest(indexName); 
+    GetIndexRequest request = new GetIndexRequest(indexName);
     boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
     return exists;
 
@@ -196,32 +196,27 @@ public static List<Object> toList(JsonArray array) throws Exception {
    * java.lang.String, java.lang.String)
    */
   @Override
-  public void createIndice(String mapping, String settings, String indexName)
-      throws Exception {
+  public void createIndice(String mapping, String settings, String indexName) throws Exception {
 
 
     RestHighLevelClient client = searchClient.getClient();
 
     CreateIndexRequest request = new CreateIndexRequest(indexName);
-    
-    if(!StringUtils.isBlank(settings)) {
-      request.settings(
-          settings,
-          XContentType.JSON
-      );
+
+    if (!StringUtils.isBlank(settings)) {
+      request.settings(settings, XContentType.JSON);
     }
-    
-    if(!StringUtils.isBlank(mapping)) {
-      request.mapping(
-          mapping,
-          XContentType.JSON);
+
+    if (!StringUtils.isBlank(mapping)) {
+      request.mapping(mapping, XContentType.JSON);
 
     }
-    
-    CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
 
-    
-    if(!createIndexResponse.isAcknowledged()) {
+    CreateIndexResponse createIndexResponse =
+        client.indices().create(request, RequestOptions.DEFAULT);
+
+
+    if (!createIndexResponse.isAcknowledged()) {
       log.error("An error occured while creating an index " + indexName);
     }
 
@@ -232,25 +227,23 @@ public static List<Object> toList(JsonArray array) throws Exception {
    * (non-Javadoc)
    * 
    * @see com.shopizer.search.services.impl.SearchService#index(java.lang.String, java.lang.String,
-   * java.lang.String, java.lang.String)
-   * collection = indexName (tweeter)
-   * object = name of item indexed (tweet)
-   * id = unique item identifier
-   * json = XContent of what to index
+   * java.lang.String, java.lang.String) collection = indexName (tweeter) object = name of item
+   * indexed (tweet) id = unique item identifier json = XContent of what to index
    */
   @Override
   public void index(String json, String collection, String id) throws Exception {
 
-    //JestClient client = searchClient.getClient();
+    // JestClient client = searchClient.getClient();
     RestHighLevelClient client = searchClient.getClient();
-    
+
     IndexRequest request = new IndexRequest(collection);
     request.id(id);
     request.source(json, XContentType.JSON);
-    
+
     IndexResponse response = client.index(request, RequestOptions.DEFAULT);
-    
-    if(response.getResult() != DocWriteResponse.Result.CREATED && response.getResult() != DocWriteResponse.Result.UPDATED) {
+
+    if (response.getResult() != DocWriteResponse.Result.CREATED
+        && response.getResult() != DocWriteResponse.Result.UPDATED) {
       log.error(
           "An error occured while indexing a document " + json + " " + response.getResult().name());
     }
@@ -270,18 +263,16 @@ public static List<Object> toList(JsonArray array) throws Exception {
     if (this.indexExist(collection)) {
 
       RestHighLevelClient client = searchClient.getClient();
-      
-      DeleteRequest request = new DeleteRequest(
-          collection,    
-          id);
-      
-      DeleteResponse deleteResponse = client.delete(
-          request, RequestOptions.DEFAULT);
-      
+
+      DeleteRequest request = new DeleteRequest(collection, id);
+
+      DeleteResponse deleteResponse = client.delete(request, RequestOptions.DEFAULT);
+
       ReplicationResponse.ShardInfo shardInfo = deleteResponse.getShardInfo();
-      
+
       if (shardInfo.getFailed() > 0) {
-        log.error("An issue occured while deleting document with id "+ id + " from index " + collection);
+        log.error(
+            "An issue occured while deleting document with id " + id + " from index " + collection);
       }
 
 
@@ -295,34 +286,31 @@ public static List<Object> toList(JsonArray array) throws Exception {
    * java.lang.String)
    */
   @Override
-  public void bulkDeleteIndex(Collection<String> ids, String collection)
-      throws Exception {
+  public void bulkDeleteIndex(Collection<String> ids, String collection) throws Exception {
 
 
     if (this.indexExist(collection)) {
 
       RestHighLevelClient client = searchClient.getClient();
-      
+
       ActionListener<DeleteResponse> listener = new ActionListener<DeleteResponse>() {
         @Override
         public void onResponse(DeleteResponse deleteResponse) {}
 
         @Override
         public void onFailure(Exception e) {
-          log.error("An issue occured while deleting document from index " + collection + " " + e.getMessage());
-            
+          log.error("An issue occured while deleting document from index " + collection + " "
+              + e.getMessage());
+
         }
       };
 
       if (ids != null && ids.size() > 0) {
-        
-        for(String id : ids) {
-          DeleteRequest request = new DeleteRequest(
-              collection,    
-              id);
-          
-          client.deleteAsync(
-              request, RequestOptions.DEFAULT, listener);
+
+        for (String id : ids) {
+          DeleteRequest request = new DeleteRequest(collection, id);
+
+          client.deleteAsync(request, RequestOptions.DEFAULT, listener);
         }
 
 
@@ -341,11 +329,12 @@ public static List<Object> toList(JsonArray array) throws Exception {
    * java.lang.String, java.lang.String)
    */
   @Override
-  public void bulkIndexKeywords(Collection<IndexKeywordRequest> bulks, String collection) throws Exception {
+  public void bulkIndexKeywords(Collection<IndexKeywordRequest> bulks, String collection)
+      throws Exception {
 
 
     RestHighLevelClient client = searchClient.getClient();
-    
+
 
     ActionListener<IndexResponse> listener = new ActionListener<IndexResponse>() {
       @Override
@@ -353,25 +342,25 @@ public static List<Object> toList(JsonArray array) throws Exception {
 
       @Override
       public void onFailure(Exception e) {
-        log.error("An issue occured while indexing document from index " + collection + " " + e.getMessage());
-          
+        log.error("An issue occured while indexing document from index " + collection + " "
+            + e.getMessage());
+
       }
     };
-    
+
 
 
     for (IndexKeywordRequest key : bulks) {
 
       StringBuilder jsonBuilder = new StringBuilder();
-      jsonBuilder
-        .append("{\"_id_\":").append("\"").append(key.getId()).append("\",")
-        .append("\"original\":").append("\"").append(key.getOriginal()).append("\",")
-        .append("\"keyword\":").append("\"").append(key.getKeyword()).append("\"}");
-      
+      jsonBuilder.append("{\"_id_\":").append("\"").append(key.getId()).append("\",")
+          .append("\"original\":").append("\"").append(key.getOriginal()).append("\",")
+          .append("\"keyword\":").append("\"").append(key.getKeyword()).append("\"}");
+
       IndexRequest request = new IndexRequest(collection);
-      //request.id(id);
+      // request.id(id);
       request.source(jsonBuilder.toString(), XContentType.JSON);
-      
+
       client.indexAsync(request, RequestOptions.DEFAULT, listener);
 
     }
@@ -386,35 +375,35 @@ public static List<Object> toList(JsonArray array) throws Exception {
    * java.lang.String, java.lang.String)
    */
   @Override
-  public com.shopizer.search.services.GetResponse getObject(String index, String id) throws Exception {
+  public com.shopizer.search.services.GetResponse getObject(String index, String id)
+      throws Exception {
 
     RestHighLevelClient client = searchClient.getClient();
-    
-    
-    GetRequest getRequest = new GetRequest(
-        index, 
-        id); 
-    
+
+
+    GetRequest getRequest = new GetRequest(index, id);
+
     GetResponse getResponse = client.get(getRequest, RequestOptions.DEFAULT);
-    
+
     if (getResponse.isExists()) {
 
       JsonParser parser = new JsonParser();
-      JsonObject crunchifyObject = (JsonObject)parser.parse(getResponse.getSourceAsString());
+      JsonObject crunchifyObject = (JsonObject) parser.parse(getResponse.getSourceAsString());
 
       Map<String, Object> fields = toMap(crunchifyObject);
 
-      com.shopizer.search.services.GetResponse response = new com.shopizer.search.services.GetResponse(fields);
+      com.shopizer.search.services.GetResponse response =
+          new com.shopizer.search.services.GetResponse(fields);
       response.setObjectJson(getResponse.getSourceAsString());
-      
+
       return response;
-      
-      
+
+
     } else {
 
-      log.error("Object not found on collection " + index + " from id " +id );
+      log.error("Object not found on collection " + index + " from id " + id);
       return null;
-      
+
     }
 
 
@@ -423,49 +412,64 @@ public static List<Object> toList(JsonArray array) throws Exception {
 
 
   @Override
-  public Set<String> searchAutocomplete(String indexName, String keyword, int size) throws Exception {
-    
+  public Set<String> searchAutocomplete(String indexName, String keyword, int size)
+      throws Exception {
+
     Set<String> keywords = new HashSet<String>();
-    if(StringUtils.isBlank(keyword)) {
+    if (StringUtils.isBlank(keyword)) {
       return keywords;
     }
-    
+
     keyword = keyword.trim();
-   
+
     RestHighLevelClient client = searchClient.getClient();
 
-    SearchRequest searchRequest = new SearchRequest(indexName);//search in only a single index
-    
+    SearchRequest searchRequest = new SearchRequest(indexName);// search in only a single index
+
     SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
     @SuppressWarnings("rawtypes")
     SuggestionBuilder termSuggestionBuilder =
         SuggestBuilders.completionSuggestion("keyword").text(keyword);
-        //.termSuggestion("keyword").text(keyword); 
     SuggestBuilder suggestBuilder = new SuggestBuilder();
-    suggestBuilder.addSuggestion("keyword-suggest", termSuggestionBuilder); 
+    suggestBuilder.addSuggestion("keyword-suggest", termSuggestionBuilder);
     searchSourceBuilder.suggest(suggestBuilder);
     searchRequest.source(searchSourceBuilder);
     
-    SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+    SearchResponse searchResponse = null;
+    try {
+      
+      searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+      
+    } catch(Exception e) {
+      log.error("Cannot search in index [" + indexName + "] index might not exist ",e);
+      return keywords;
+    }
+    
+    if(searchResponse == null) {
+      log.warn("Empty searchResponse");
+      return keywords;
+    }
+
 
     RestStatus status = searchResponse.status();
     if (status.getStatus() != 200) {
-      throw new Exception("Ann error occured when searching index " + indexName + " " + status.getStatus());
+      throw new Exception(
+          "Ann error occured when searching index " + indexName + " " + status.getStatus());
     }
 
-    
-    
-    Suggest suggest = searchResponse.getSuggest(); 
-    CompletionSuggestion completionSuggestion = suggest.getSuggestion("keyword-suggest"); 
-    for (CompletionSuggestion.Entry entry : completionSuggestion.getEntries()) { 
-        for (CompletionSuggestion.Entry.Option option : entry) { 
-            Map<String, Object> originalFields = option.getHit().getSourceAsMap();
-            String suggestText = (String)originalFields.get("original");
-            keywords.add(suggestText);
-        }
+
+
+    Suggest suggest = searchResponse.getSuggest();
+    CompletionSuggestion completionSuggestion = suggest.getSuggestion("keyword-suggest");
+    for (CompletionSuggestion.Entry entry : completionSuggestion.getEntries()) {
+      for (CompletionSuggestion.Entry.Option option : entry) {
+        Map<String, Object> originalFields = option.getHit().getSourceAsMap();
+        String suggestText = (String) originalFields.get("original");
+        keywords.add(suggestText);
+      }
     }
-    
-    
+
+
     return keywords;
   }
 
@@ -476,26 +480,28 @@ public static List<Object> toList(JsonArray array) throws Exception {
    * SearchRequest)
    */
   @Override
-  public com.shopizer.search.services.SearchResponse search(com.shopizer.search.services.SearchRequest request) throws Exception {
+  public com.shopizer.search.services.SearchResponse search(
+      com.shopizer.search.services.SearchRequest request) throws Exception {
 
 
 
     RestHighLevelClient client = searchClient.getClient();
-    
+
     String index = null;
-        
-    if(!CollectionUtils.isEmpty(request.getCollections())) {
+
+    if (!CollectionUtils.isEmpty(request.getCollections())) {
       index = request.getCollections().get(0);
     }
-    if(!StringUtils.isBlank(request.getIndex())) {
+    if (!StringUtils.isBlank(request.getIndex())) {
       index = request.getIndex();
     }
-    
-    SearchRequest searchRequest = new SearchRequest(index);//search in only a single index
-    
-    MultiMatchQueryBuilder qb = new MultiMatchQueryBuilder(request.getMatch(),"name","description","categories","manufacturer","tags");
+
+    SearchRequest searchRequest = new SearchRequest(index);// search in only a single index
+
+    MultiMatchQueryBuilder qb = new MultiMatchQueryBuilder(request.getMatch(), "name",
+        "description", "categories", "manufacturer", "tags");
     qb.fuzziness(Fuzziness.AUTO);
-    
+
     SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
     searchSourceBuilder.query(qb);
     if (request.getSize() > -1) {
@@ -504,41 +510,55 @@ public static List<Object> toList(JsonArray array) throws Exception {
     }
 
 
-    //searchSourceBuilder.sort(new FieldSortBuilder("name").order(SortOrder.ASC));
-    
-  //based on aggregationList
-    
-    for(String aggregationName : aggregationList) {
-      TermsAggregationBuilder agg = AggregationBuilders.terms(aggregationName)
-          .field(aggregationName);
+    // searchSourceBuilder.sort(new FieldSortBuilder("name").order(SortOrder.ASC));
+
+    // based on aggregationList
+
+    for (String aggregationName : aggregationList) {
+      TermsAggregationBuilder agg =
+          AggregationBuilders.terms(aggregationName).field(aggregationName);
       searchSourceBuilder.aggregation(agg);
     }
 
-    searchRequest.source(searchSourceBuilder);    
-    SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+    searchRequest.source(searchSourceBuilder);
+    SearchResponse searchResponse = null;
+    
+    try {
+      searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+    } catch(Exception e) {
+      log.error("Cannot search in index [" + index + "] index might not exist ",e);
+      return new com.shopizer.search.services.SearchResponse();
+    }
+    
+    if(searchResponse == null) {
+      log.warn("Empty searchResponse");
+      return new com.shopizer.search.services.SearchResponse();
+    }
 
 
     RestStatus status = searchResponse.status();
     if (status.getStatus() != 200) {
-      throw new Exception("Ann error occured when searcging index " + index + " " + status.getStatus());
+      throw new Exception(
+          "Ann error occured when searcging index " + index + " " + status.getStatus());
     }
-    
-    com.shopizer.search.services.SearchResponse response = this.buildSearchHits(searchResponse);
-    
-    Map<String, com.shopizer.search.services.Facet> facetsMap = new HashMap<String, com.shopizer.search.services.Facet>();
-    
 
-    
-    for(String aggregationName : aggregationList) {
+    com.shopizer.search.services.SearchResponse response = this.buildSearchHits(searchResponse);
+
+    Map<String, com.shopizer.search.services.Facet> facetsMap =
+        new HashMap<String, com.shopizer.search.services.Facet>();
+
+
+
+    for (String aggregationName : aggregationList) {
       com.shopizer.search.services.Facet f = new com.shopizer.search.services.Facet();
       f.setName(aggregationName);
       facetsMap.put(f.getName(), f);
-      
-      
-      Terms termAgg = searchResponse.getAggregations().get(aggregationName); 
+
+
+      Terms termAgg = searchResponse.getAggregations().get(aggregationName);
       for (Terms.Bucket entry : termAgg.getBuckets()) {
-        String key = entry.getKeyAsString();            // bucket key
-        long docCount = entry.getDocCount();            // Doc count
+        String key = entry.getKeyAsString(); // bucket key
+        long docCount = entry.getDocCount(); // Doc count
         com.shopizer.search.services.Entry e = new com.shopizer.search.services.Entry();
         e.setName(key);
         e.setCount(docCount);
@@ -546,7 +566,7 @@ public static List<Object> toList(JsonArray array) throws Exception {
 
       }
     }
-    
+
     response.setFacets(facetsMap);
     return response;
 
@@ -554,11 +574,13 @@ public static List<Object> toList(JsonArray array) throws Exception {
   }
 
   @SuppressWarnings("unchecked")
-  private com.shopizer.search.services.SearchResponse buildSearchHits(SearchResponse searchResponse) throws Exception {
-    
-    
-    
-    com.shopizer.search.services.SearchResponse response = new com.shopizer.search.services.SearchResponse();
+  private com.shopizer.search.services.SearchResponse buildSearchHits(SearchResponse searchResponse)
+      throws Exception {
+
+
+
+    com.shopizer.search.services.SearchResponse response =
+        new com.shopizer.search.services.SearchResponse();
 
 
     SearchHits hits = searchResponse.getHits();
@@ -567,49 +589,50 @@ public static List<Object> toList(JsonArray array) throws Exception {
     long numHits = totalHits.value;
 
     response.setCount(numHits);
-    
+
     SearchHit[] searchHits = hits.getHits();
-    List<com.shopizer.search.services.SearchHit> buildHits = new ArrayList<com.shopizer.search.services.SearchHit>();
+    List<com.shopizer.search.services.SearchHit> buildHits =
+        new ArrayList<com.shopizer.search.services.SearchHit>();
     @SuppressWarnings("rawtypes")
     List ids = new ArrayList();
     for (SearchHit hit : searchHits) {
-        // do something with the SearchHit
+      // do something with the SearchHit
       String sourceAsString = hit.getSourceAsString();
-      
+
       JsonParser parser = new JsonParser();
-      JsonObject crunchifyObject = (JsonObject)parser.parse(sourceAsString);
+      JsonObject crunchifyObject = (JsonObject) parser.parse(sourceAsString);
 
       Map<String, Object> item = toMap(crunchifyObject);
-      
+
       String _id = hit.getId();
 
-      if(_id == null) {
+      if (_id == null) {
         throw new Exception("Indexed items don't have _id");
       }
-      
+
 
       String sku = null;
-      
+
       JsonElement _skuElement = crunchifyObject.get("sku");
-      if(_skuElement!=null) {
+      if (_skuElement != null) {
         sku = _skuElement.getAsString();
-    }
+      }
 
       com.shopizer.search.services.SearchHit h =
           new com.shopizer.search.services.SearchHit(item, _id, sku);
-      
-      
+
+
       buildHits.add(h);
       ids.add(_id);
- 
+
     }
-    
+
     response.setIds(ids);
     response.setSearchHits(buildHits);
-    
+
     return response;
 
-    
+
   }
 
 }

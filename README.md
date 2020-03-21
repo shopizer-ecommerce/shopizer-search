@@ -1,4 +1,4 @@
-# shopizer-search - 2.11.0
+# shopizer-search - 2.11.1
 
 Search wrapper - Elastic Search used as as search engine for Shopizer
 

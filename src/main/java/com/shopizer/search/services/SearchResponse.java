@@ -1,6 +1,8 @@
 package com.shopizer.search.services;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -13,12 +15,12 @@ public class SearchResponse {
 
   @Deprecated
   private String inputSearchJson;
-  private Collection<String> ids;
+  private Collection<String> ids = new ArrayList<String>();
   private long count;
 
 
-  private Collection<SearchHit> searchHits;
-  private Map<String, Facet> facets;
+  private Collection<SearchHit> searchHits = new ArrayList<SearchHit>();
+  private Map<String, Facet> facets = new HashMap<String, Facet>();
 
   public Map<String, Facet> getFacets() {
     return facets;

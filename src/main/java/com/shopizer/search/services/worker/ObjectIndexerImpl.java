@@ -1,9 +1,12 @@
 package com.shopizer.search.services.worker;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopizer.search.services.impl.SearchDelegate;
@@ -20,6 +23,9 @@ public class ObjectIndexerImpl implements IndexWorker {
   private SearchDelegate searchDelegate;
 
   private List<IndexConfiguration> indexConfigurations;
+  
+  private Map<String, String> mappings = new ConcurrentHashMap<String, String>();
+  private Map<String, String> settings = new ConcurrentHashMap<String, String>();
 
   public List<IndexConfiguration> getIndexConfigurations() {
     return indexConfigurations;
@@ -34,8 +40,8 @@ public class ObjectIndexerImpl implements IndexWorker {
   public synchronized void init(SearchClient client) {
 
     // get the list of configuration
-    // get the collection name and index name
     // get the mapping file
+    // get sttings file
     if (init) {
       return;
     }
@@ -63,18 +69,21 @@ public class ObjectIndexerImpl implements IndexWorker {
 
             if (mappingFile != null) {
               metadata = FileUtil.readFileAsString(mappingFile);
+              mappings.put(config.getIndexName(), metadata);
             }
 
             if (settingsFile != null) {
               settingsdata = FileUtil.readFileAsString(settingsFile);
+              settings.put(config.getIndexName(), settingsdata);
             }
 
-            if (!StringUtils.isBlank(config.getIndexName())) {
+            
+/*            if (!StringUtils.isBlank(config.getIndexName())) {
 
               if (!searchDelegate.indexExist(config.getCollectionName())) {
                 searchDelegate.createIndice(metadata, settingsdata, config.getCollectionName());
               }
-            }
+            }*/
 
           } catch (Exception e) {
             log.error(e);
@@ -88,17 +97,28 @@ public class ObjectIndexerImpl implements IndexWorker {
       init = true;
     }
   }
+  
+  
+  private void validateIndex(String index) throws Exception {
+    Validate.notNull(index, "Index name must not be null");
+    String indexNameStripped = index.substring(0,index.lastIndexOf("_"));
+    if(!searchDelegate.indexExist(index)) {
+      searchDelegate.createIndice(getMappings().get(indexNameStripped), getSettings().get(indexNameStripped), index);
+    }
+  }
 
   @SuppressWarnings({"unchecked", "unused"})
-  public void execute(SearchClient client, String json, String collection, String id,
+  public void execute(SearchClient client, String json, String index, String id,
       ExecutionContext context) throws Exception {
 
     try {
 
-
+      
       if (!init) {
         init(client);
       }
+      
+      validateIndex(index);
 
       // get json object
       Map<String, Object> indexData = (Map<String, Object>) context.getObject("indexData");
@@ -113,12 +133,12 @@ public class ObjectIndexerImpl implements IndexWorker {
 
       context.setObject("indexData", indexData);
 
-      com.shopizer.search.services.GetResponse r = searchDelegate.getObject(collection, id);
+      com.shopizer.search.services.GetResponse r = searchDelegate.getObject(index, id);
       if (r != null) {
-        searchDelegate.delete(collection, id);
+        searchDelegate.delete(index, id);
       }
 
-      searchDelegate.index(json, collection, id);
+      searchDelegate.index(json, index, id);
 
     } catch (Exception e) {
       log.error("Exception while indexing a product, maybe a timing ussue for no shards available",
@@ -126,6 +146,22 @@ public class ObjectIndexerImpl implements IndexWorker {
     }
 
 
+  }
+
+  public Map<String, String> getMappings() {
+    return mappings;
+  }
+
+  public void setMappings(Map<String, String> mappings) {
+    this.mappings = mappings;
+  }
+
+  public Map<String, String> getSettings() {
+    return settings;
+  }
+
+  public void setSettings(Map<String, String> settings) {
+    this.settings = settings;
   }
 
 }

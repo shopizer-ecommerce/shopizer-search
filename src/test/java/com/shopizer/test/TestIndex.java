@@ -51,8 +51,8 @@ public class TestIndex {
 		String jsonData = "{\"id\":\"100\",\"name\":\"Thai cussion from asia\",\"price\":\"14.99\",\"categories\":[\"Imports\"],\"store\":\"default\",\"description\":\"Import from thailand\", \"tags\":[\"cotton \",\"liquidation\"], \"manufacturer\":\"mnufacture12\"}";
 		String jsonData2 = "{\"id\":\"200\",\"name\":\"Asian pillow\",\"price\":\"24.99\",\"categories\":[\"Imports\"],\"store\":\"default\",\"description\":\"Import from asia\", \"tags\":[\"cotton \",\"pillow\"], \"manufacturer\":\"mnufacturer2\"}";
 
-		searchService.index(jsonData2, "product_en_default");//as of es 7.5 3rd type is no more required
-		searchService.index(jsonData, "product_en_default");
+		searchService.index(jsonData2, "product_en_test");//as of es 7.5 3rd type is no more required
+		searchService.index(jsonData, "product_en_test");
 		
 		System.out.println("Index done !");
 		

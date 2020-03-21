@@ -49,12 +49,12 @@ public class TestSearch {
 		SearchRequest request = new SearchRequest();
 		request.setSize(-1);
 		request.setStart(0);
-		request.setIndex("product_en_default");
-		request.setMatch("shelf");
+		request.setIndex("product_en_default1");
+		request.setMatch("thai");
 
 		SearchResponse resp = searchService.search(request);
 
-		Assert.assertNotNull(resp);
+		Assert.assertFalse(resp.getIds().isEmpty());
 		
 		
 	}
