@@ -414,6 +414,9 @@ public class SearchDelegateImpl implements SearchDelegate {
   @Override
   public Set<String> searchAutocomplete(String indexName, String keyword, int size)
       throws Exception {
+    
+    
+    String indexSubstitution = indexName.substring(0, indexName.lastIndexOf("_"));
 
     Set<String> keywords = new HashSet<String>();
     if (StringUtils.isBlank(keyword)) {
@@ -468,7 +471,6 @@ public class SearchDelegateImpl implements SearchDelegate {
         keywords.add(suggestText);
       }
     }
-
 
     return keywords;
   }
