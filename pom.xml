@@ -18,7 +18,7 @@
 		<guava.version>19.0</guava.version>
 		<junit.version>4.12</junit.version>
 		<httpcore.version>4.4.4</httpcore.version>
-		<httpclient.version>4.5.2</httpclient.version>
+		<httpclient.version>4.5.13</httpclient.version>
 		<javax.inject-version>1</javax.inject-version>
 		<commons-lang3-version>3.4</commons-lang3-version>
 		<commons-collections4-version>4.1</commons-collections4-version>
