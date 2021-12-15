@@ -1,0 +1,11 @@
+{
+        "properties": {
+            "keyword": {
+                "type":"completion",
+                "analyzer": "rebuilt_stop"
+            },
+            "original": {
+                "type":"keyword"
+            }
+        }
+}
